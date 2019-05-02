@@ -59,11 +59,12 @@ class FrameView(FigureCanvas):
         # initial frame dimensions
         # if the frame dimensions change we need to clear/redraw the figureCanvas
         # as set_data would distort the frame
-        clearFig = False
         if not self.frame_rows == rows or not self.frame_cols == cols:
             self.frame_rows = rows
             self.frame_cols = cols
-            clearFig = True
+            self.showFrame = None
+            if self.axes:
+                self.axes.clear()
         
         _, data = rFunct(fPath, self.frame_rows, self.frame_cols, offset, np.uint32)
         # get the frame saint ready 
@@ -79,7 +80,7 @@ class FrameView(FigureCanvas):
         # - adjust/fix the widget size
         self.frame_loaded.emit(*np.flip(self.data.shape))
         
-        if self.showFrame == None or clearFig:
+        if self.showFrame == None:
             self.showFrame = self.axes.imshow(self.data, interpolation='none')
         else:
             self.showFrame.set_data(self.data)
@@ -93,8 +94,8 @@ class FrameView(FigureCanvas):
         logging.info(self.__class__.__name__)
         '''
          NOTE TO MATPLOTLIB PATCHES COLOR
-         Turns out, you need to do axes.add_artist()
-         to have the color specifications work
+         Turns out, you need to call axes.add_artist()
+         to make the color specifications work
          Thanks to:
          https://stackoverflow.com/questions/10550477/how-do-i-set-color-to-rectangle-in-matplotlib
         '''
