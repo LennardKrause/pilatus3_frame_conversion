@@ -13,17 +13,13 @@ from _classes_DraggableObject import DraggableObject
 from _utility import *
 
 class FrameView(FigureCanvas):
-    '''
-    
-    '''
+
     mask_written = QtCore.pyqtSignal(str)
     frame_loaded = QtCore.pyqtSignal(int, int)
     
     def __init__(self, parent=None):
         logging.info(self.__class__.__name__)
-        '''
-         
-        '''
+        
         self.fig = Figure()
         FigureCanvas.__init__(self, self.fig)
         self.axes = self.fig.add_subplot(111)
@@ -147,9 +143,6 @@ class FrameView(FigureCanvas):
         
     def transform_and_clip(self, p):
         logging.info(self.__class__.__name__)
-        '''
-         
-        '''
         # get the 'actual' rectangle path and not the 'box'
         path = p.get_path()
         transform = p.get_transform()
@@ -162,9 +155,7 @@ class FrameView(FigureCanvas):
     
     def convert_patches_to_mask(self, fPath, mPath):
         logging.info(self.__class__.__name__)
-        '''
-         
-        '''
+        
         fstem, fname = os.path.split(fPath)
         # this figure has to be fixed size
         fig = plt.figure(figsize=(np.flip(self.data.shape)), dpi=1)
@@ -173,12 +164,14 @@ class FrameView(FigureCanvas):
         fig.patch.set_visible(False)
         # turn off the axis
         axes.set_axis_off()
+        # set margins to zero
         fig.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.0)
+        # cut out the patches
         self.transform_and_clip(self.patch_rect)
         self.transform_and_clip(self.patch_elli)
         # render the image
         fig.canvas.draw()
-        # translate figure to np.array
+        # translate figure to array
         data_stacked = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.int8).reshape(self.data.shape[0], self.data.shape[1], 3)
         # continue with first layer
         data_clip = data_stacked[:,:,0]
@@ -233,8 +226,7 @@ class FrameView(FigureCanvas):
         
         # write the frame
         write_bruker_frame(mPath, header, data)
-        # store masks in a dict, saving pos and shape of the obj
-        # retrieve on switch, changing color to green from light blue
+        # store the patches in a dict, saving pos and shape
         self.masks[fPath] = {}
         self.masks[fPath]['rect'] = [self.patch_rect.get_xy(),
                                      self.patch_rect.get_width(),
