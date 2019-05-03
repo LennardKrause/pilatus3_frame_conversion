@@ -22,7 +22,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.set_tooltips()
         
         # window title and icon
-        self.title = 'Convert APS Pilatus3-1M data (.tif) to Bruker format (.sfrm)'
+        self.title = 'Convert Pilatus3 data to Bruker format (.sfrm)'
         self.setWindowIcon(self.windowIcon)
         
         # installEventFilters allow us to use the 'line_edit' widget as a button 
@@ -155,6 +155,10 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.rList = []
         self.fList = []
         self.suffix = '_sfrm'
+        
+        #########################################
+        ##  Add new format identifiers here!   ##
+        #########################################
         self.availableFormats = [self.format_SP8,
                                  self.format_APS,
                                  self.format_DLS]
@@ -489,12 +493,6 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         path_input = os.path.abspath(self.le_input.text())
         path_output = os.path.abspath(self.le_output.text())
         #####################################
-        # user input: path to data
-        ##if path_input:
-        ##    file_list = sorted(glob.glob(os.path.abspath(os.path.join(path_input, '*_*.tif'))))
-        ##else:
-        ##    self.popup_window('Information', 'No suitable image files found.', 'Please check path.')
-        ##    return
         
         # check if there are any files
         if not self.fList:
@@ -502,18 +500,9 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             return
         # Make directories recursively
         self.create_output_directory(path_output)
-        # fork here according to specified facility
-        #  - different file name format
-        #  - different conversion needed (.inf file for SPring8)
-        if self.site == 'APS':
-            self.start_conversion('APS_Bruker', path_output, self.fList)
-        elif self.site == 'SP8':
-            self.start_conversion('SP8_Bruker', path_output, self.fList)
-        elif self.site == 'DLS':
-            self.start_conversion('DLS_Bruker', path_output, self.fList)
-        else:
-            self.popup_window('Information', 'Please specify facility and conversion!', '')
-            return
+        
+        # self.site tell start_conversion what to do!
+        self.start_conversion(self.site, path_output, self.fList)
     
     def start_conversion(self, source, path_output, file_list):
         logging.info(self.__class__.__name__)
@@ -536,11 +525,18 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         overwrite_flag = self.cb_overwrite.isChecked()
         
         with multiprocessing.Pool() as pool:
-            results = []
-            if source == 'APS_Bruker':
+            #########################################
+            ##  Add new format identifiers here!   ##
+            #########################################
+            # fork here according to specified facility
+            #  - conversion: what _utility.py function to call
+            #  - parameters: parameters for the conversion function
+            #     - path_output, dimension1, dimension2, overwrite_flag
+            #     - more if needed, e.g. SP8 2-th correction value
+            if source == 'APS':
                 conversion = convert_frame_APS_Bruker
-                parameters = [path_output, 1043, 981, overwrite_flag]
-            elif source == 'SP8_Bruker':
+                parameters = [path_output, overwrite_flag]
+            elif source == 'SP8':
                 # check data collection timestamp
                 with open(file_list[0], 'rb') as ofile:
                     year = int(re.search(b'(\d{4}):\d{2}:\d{2}\s+\d{2}:\d{2}:\d{2}', ofile.read(64)).group(1).decode())
@@ -548,25 +544,30 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
                 if year < 2019:
                     SP8_tth_corr = 4.8
                 conversion = convert_frame_SP8_Bruker
-                parameters = [path_output, SP8_tth_corr, 1043, 981, overwrite_flag]
-            elif source == 'DLS_Bruker':
+                parameters = [path_output, SP8_tth_corr, overwrite_flag]
+            elif source == 'DLS':
                 conversion = convert_frame_DLS_Bruker
-                parameters = [path_output, 1679, 1475, overwrite_flag]
+                parameters = [path_output, overwrite_flag]
             else:
-                self.popup_window('Information', 'Unknown facility!', 'APS or SPring-8?')
+                self.popup_window('Information', 'Unknown facility!', '')
                 return
+            
             # hide button, show bar
             self.tb_convert.hide()
             self.pb_convert.show()
+            
             # feed the pool
+            results = []
             for fname in file_list:
                 pool.apply_async(conversion, args=[fname] + parameters, callback=results.append)
+            
             # update the progress
             _todo = len(file_list)
             while len(results) != _todo:
                 progress = float(len(results)) / float(_todo) * 100.0
                 self.pb_convert.setValue(progress)
-                # this makes the pb being updated more 'fluently'
+                # use processEvents() to keep track of the loop / update the GUI
+                # or: try to thread it -> in the future.
                 QtWidgets.QApplication.processEvents()
                 if len(results) > 0:
                     # conversion in progress
