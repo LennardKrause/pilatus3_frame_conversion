@@ -13,7 +13,7 @@ class DraggableObject:
         self.press = None
         self.background = None
         # rectangle patch offset: displace the rectangle outside the
-        # frame area to avoid unwanted active areas when tilting
+        # frame area to avoid unwanted active areas on tilting
         # self.rect_o: defined in _classes_FrameView.FrameView
         if self.obj.get_gid() == 'rect':
             _, self.rect_o = self.obj.get_xy()
