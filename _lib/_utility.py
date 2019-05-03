@@ -127,19 +127,17 @@ def read_pilatus_tif(fname, rows, cols, offset, bytecode):
      
     '''
     import numpy as np
+    # translate the bytecode to the bytes per pixel
+    bpp = len(np.array(0, bytecode).tostring())
+    # determine the image size
+    size = rows * cols * bpp
     # open the file
     with open(fname, 'rb') as f:
-        # translate the bytecode to the bytes per pixel
-        bpp = len(np.array(0, bytecode).tostring())
-        # determine the image size
-        size = rows * cols * bpp
         # read the header
         h = f.read(offset)    
-        #h = h[h.index(b'# '):]
-        #h = h[:h.index(b'\x00')]
-        header = str(h)
         # read the image (bytestream)
         rawData = f.read(size)
+    header = str(h)
     # reshape the image into 2d array (rows, cols)
     # dtype = bytecode
     data = np.fromstring(rawData, bytecode).reshape((rows, cols))
