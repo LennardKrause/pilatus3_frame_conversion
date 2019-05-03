@@ -145,6 +145,22 @@ def read_pilatus_tif(fname, rows, cols, offset, bytecode):
     data = np.fromstring(rawData, bytecode).reshape((rows, cols))
     return header, data
 
+def pilatus_pad(data, fill=-2, pad=8):
+    import numpy as np
+    # get the frame saint ready 
+    # - multiple of 'pad' pixels
+    # - pad with 'fill'
+    # - return the offsets to calculate a new beamcenter
+    (rows, cols) = data.shape
+    pad_rows = int(np.ceil(rows / pad) * pad)
+    pad_cols = int(np.ceil(cols / pad) * pad)
+    offset_rows = (pad_rows - rows) // 2
+    offset_cols = (pad_cols - cols) // 2
+    padded = np.zeros((pad_rows, pad_cols), dtype=np.int32)
+    padded.fill(fill)
+    padded[offset_rows:offset_rows + rows, offset_cols:offset_cols + cols] = data
+    return padded, offset_rows, offset_cols
+
 def bruker_header():
     '''
      default Bruker header
@@ -417,7 +433,6 @@ def fix_bad_pixel(data, flag, bad_int=-2, sat_val=2**20):
      a bunch of different (unpolished!) ideas on how to deal with bad pixels,
        just for internal testing, no real application as the bad pixels are
        masked using saints active pixel mask
-     - useful only for Dectris Pilatus image files!
     '''
     import numpy as np
     # set bad pixels to sat_val
@@ -509,7 +524,6 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=Tr
     header, data = read_pilatus_tif(fname, rows, cols, 4096, np.int32)
     
     # get the frame saint ready 
-    # - multiple of 128x128 pixels
     # - pad with zeros
     data, offset_rows, offset_cols = pilatus_pad(data)
     
@@ -522,6 +536,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=Tr
     data[data == -2] = 0
     
     # scale the data to avoid underflow tables
+    # should yield zero for Pilatus3 images!
     baseline_offset = -1 * data.min()
     data += baseline_offset
     
@@ -550,7 +565,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=Tr
     goni_phi = 360.0 - goni_phi
     goni_tth = 0.0
     
-    # And it is assumed that Phi is the scan axis!
+    # Phi is the scan axis!
     scan_sta = goni_phi
     scan_end = goni_phi + scan_inc
     
@@ -637,8 +652,7 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     # read in the frame
     _, data = read_pilatus_tif(fname, rows, cols, 4096, np.int32)
     
-    # get the frame saint ready 
-    # - multiple of 128x128 pixels
+    # get the frame saint ready
     # - pad with zeros
     data, offset_rows, offset_cols = pilatus_pad(data)
     
@@ -652,10 +666,11 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     data[data == -2] = 0
     
     # scale the data to avoid underflow tables
+    # should yield zero for Pilatus3 images!
     baseline_offset = -1 * data.min()
     data += baseline_offset
     
-    # get the info file
+    # info file name
     infFile = os.path.join(path_to, basename + '.inf')
     
     # check if info file exists
@@ -681,7 +696,7 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
         scan_sta, scan_end, scan_inc, scan_exp = [float(i) for i in re.search('SCAN_ROTATION\s*=\s*(-*\d+\.\d+)\s*(-*\d+\.\d+)\s*(-*\d+\.\d+)\s*(-*\d+\.\d+)\s*-*\d+\.\d+\s*-*\d+\.\d+\s*-*\d+\.\d+\s*-*\d+\.\d+\s*-*\d+\.\d+\s*-*\d+\.\d+\s*;', infoFile).groups()]
     
     # For some reason the distance is missing for some runs.
-    # At SPring-8 the detector distance cannot be changed.
+    # At SPring-8 the detector distance 'cannot' be changed.
     # So, we hard-code 130.0 on missing entry here!
     if goni_dxt == 0.0:
         goni_dxt = 130.0
@@ -692,11 +707,10 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     beam_x = det_beam_y + offset_rows
     beam_y = cols - det_beam_x + offset_cols
     
-    # the tth angles seem to be off, this is a
-    # preliminary fix! Hopefully not final.
+    # 2-th were misaligned (pre 2019 data)
     goni_tth = goni_tth + (goni_tth * tth_corr)
     
-    # TTh and Chi run in the negative direction
+    # SP8 to Bruker conversion:
     goni_chi = -goni_chi
 
     # calculate detector pixel per cm
@@ -704,7 +718,7 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     # PILATUS3-1M pixel size is 0.172 mm 
     pix_per_512 = round((10.0 / 0.172) * (512.0 / ((rows + cols) / 2.0)), 6)
 
-    # convert SPring-8 to Bruker angles
+    # convert SP8 to Bruker angles
     RAXIS2BRUKER = {'Omega':1, 'Chi':2, 'Phi':0}
     axis_start = [goni_tth, goni_omg, goni_phi, goni_chi]
     axis_start[RAXIS2BRUKER[scan_rax]] = scan_sta
@@ -764,63 +778,6 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     write_bruker_frame(outName, header, data)
     return True
 
-def convert_frame_SP8_Raxis(fname, path_img, tth_corr, overwrite=True):
-    '''
-     
-    '''
-    import os, re, shutil, subprocess
-    
-    path_to, frame_name = os.path.split(fname)
-    basename, ext = os.path.splitext(frame_name)
-    infoName = os.path.join(path_to, basename + '.inf')
-    imgName = os.path.join(path_img, basename + '.img')
-    
-    # check if info file exists
-    if not os.path.isfile(infoName):
-        print('ERROR: Info file is missing for: {}'.format(fname))
-        return False
-    
-    # check if file exists and overwrite flag
-    if os.path.exists(fname) and overwrite == False:
-        return False
-    
-    # precompile regex for parsing the tth angle from the info file
-    goni_det_exp = re.compile('SCAN_DET_RELZERO\s*=\s*(-*\d+\.\d+)\s*(-*\d+\.\d+)\s*(-*\d+\.\d+)\s*;')
-    
-    # read the info file, check for tth values
-    # if thh != 0.0, add 5%, create backup (filename.inf_bak)
-    # and write a new info file
-    with open(infoName) as rFile:
-        infoRead = rFile.read()
-    goni_noIdea, goni_tth, goni_dxt = [float(i) for i in re.search(goni_det_exp, infoRead).groups()]
-    
-    # write an updated info file
-    file_backup = False
-    if round(goni_tth, 6) != 0.0:
-        new_goni_tth = round(goni_tth + goni_tth * float(tth_corr), 3)
-        new_goni_line = 'SCAN_DET_RELZERO={} {} {};'.format(goni_noIdea, new_goni_tth, goni_dxt)
-        shutil.move(infoName, infoName + '_bak')
-        file_backup = True
-        with open(infoName, 'w') as wFile:
-            wFile.write(re.sub(goni_det_exp, new_goni_line, infoRead))
-    
-    # send the ImageConvert text
-    # output to the void
-    _FNULL = open(os.devnull, 'w')
-    
-    while 1:
-        # run ImageConvert.exe
-        subprocess.call(['_lib/ImageConvert.exe', '-pilatus', infoName, fname, imgName, '0.0'], stdout=_FNULL)
-        if os.path.getsize(imgName) > 0:
-            break
-        else:
-            print('Error writing {}, retrying!'.format(fname))
-            
-    # if a new inf file was written, put back the old one when done!
-    if file_backup:
-        shutil.move(infoName + '_bak', infoName)
-    return True
-    
 def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, overwrite=True):
     '''
     
@@ -966,18 +923,3 @@ def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, overwrite=T
     # write the frame
     write_bruker_frame(outName, header, data)
     return True
-
-def pilatus_pad(data, fill=-2, pad=8):
-    import numpy as np
-    # get the frame saint ready 
-    # - multiple of 128x128 pixels
-    # - pad with zeros
-    (rows, cols) = data.shape
-    pad_rows = int(np.ceil(rows / pad) * pad)
-    pad_cols = int(np.ceil(cols / pad) * pad)
-    offset_rows = (pad_rows - rows) // 2
-    offset_cols = (pad_cols - cols) // 2
-    padded = np.zeros((pad_rows, pad_cols), dtype=np.int32)
-    padded.fill(fill)
-    padded[offset_rows:offset_rows + rows, offset_cols:offset_cols + cols] = data
-    return padded, offset_rows, offset_cols
