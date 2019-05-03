@@ -46,12 +46,12 @@ def read_photon2_raw(fname, dim1, dim2, bytecode):
       - no header, pure data
     '''
     import numpy as np
+    # translate the bytecode to the bytes per pixel
+    bpp = len(np.array(0, bytecode).tostring())
+    # determine the image size
+    size = dim1 * dim2 * bpp
     # open the file
     with open(fname, 'rb') as f:
-        # translate the bytecode to the bytes per pixel
-        bpp = len(np.array(0, bytecode).tostring())
-        # determine the image size
-        size = dim1 * dim2 * bpp
         # read the image (bytestream)
         rawData = f.read(size)
     # reshape the image into 2d array (dim1, dim2)
@@ -114,7 +114,7 @@ def read_pilatus_cbf(fname, *args):
     import re
     with open(fname, 'rb') as f:
         stream = f.read()
-        start = stream.find(b'\x0c\x1a\x04\xd5')
+    start = stream.find(b'\x0c\x1a\x04\xd5')
     head = str(stream[:start])
     size = int(re.search('X-Binary-Size:\s+(\d+)', head).group(1))
     dim1 = int(re.search('X-Binary-Size-Fastest-Dimension:\s+(\d+)', head).group(1))
