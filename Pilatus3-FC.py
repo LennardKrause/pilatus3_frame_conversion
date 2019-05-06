@@ -26,7 +26,7 @@ _REVISION = 'v2019-04-25'
 import sys, os, logging
 from PyQt5 import QtWidgets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
-from _classes_GUI import Main_GUI
+from _Classes_GUI import Main_GUI
 
 def main():
     logging.debug(__name__)
