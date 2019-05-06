@@ -5,3 +5,8 @@ It is currently designed to convert data collected at the following facilities/b
   - Advanced Photon Source / 15ID-D
   - SPring-8 / BL02B1
   - Diamond Light Source / I19-1
+
+Required libraries:
+  - numpy 1.16.3
+  - matplotlib 3.0.3
+  - PyQt5 5.12.1
