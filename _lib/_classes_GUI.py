@@ -2,8 +2,8 @@ import os, sys, logging, glob, multiprocessing, re
 import numpy as np
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
-from _classes_FrameView import FrameView
-from _utility import *
+from _Classes_FrameView import FrameView
+from _Utility import *
 
 class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirname(__file__), 'main_gui.ui'))[0]):
     def __init__(self, parent=None):
