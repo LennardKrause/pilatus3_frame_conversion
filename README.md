@@ -12,4 +12,4 @@ Tested with Python 3.5.3
 # Used libraries (tested with):
   - numpy (1.16.3)
   - matplotlib (3.0.3)
-  - PyQt5 (5.12.1)
+  - PyQt5 (5.12.2)
