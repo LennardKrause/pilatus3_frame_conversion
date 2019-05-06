@@ -9,8 +9,8 @@ from PyQt5 import QtCore
 import os, sys, logging
 import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
-from _classes_DraggableObject import DraggableObject
-from _utility import *
+from _Classes_DraggableObject import DraggableObject
+from _Utility import *
 
 class FrameView(FigureCanvas):
 
