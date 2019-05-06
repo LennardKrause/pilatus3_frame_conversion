@@ -21,8 +21,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.init_vars()
         self.set_tooltips()
         
-        # window title and icon
-        self.title = 'Convert Pilatus3 data to Bruker format (.sfrm)'
+        # window icon
         self.setWindowIcon(self.windowIcon)
         
         # installEventFilters allow us to use the 'line_edit' widget as a button 
