@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
 from _Classes_FrameView import FrameView
 from _Utility import *
 
-class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirname(__file__), 'main_gui.ui'))[0]):
+class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirname(__file__), '_Main_GUI.ui'))[0]):
     def __init__(self, parent=None):
         logging.info(self.__class__.__name__)
         super(QtWidgets.QMainWindow, self).__init__(parent)
