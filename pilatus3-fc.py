@@ -14,13 +14,6 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    # Remove existing handlers, Python creates a
-    # default handler that goes to the console
-    # and will ignore further basicConfig calls
-    root = logging.getLogger()
-    if root.handlers:
-        for handler in root.handlers:
-            root.removeHandler(handler)
     # create logger
     logging.basicConfig(level=logging.INFO, style='{', format='{message:>20s} > {funcName}')
     main()
