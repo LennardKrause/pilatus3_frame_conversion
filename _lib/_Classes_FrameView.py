@@ -58,9 +58,10 @@ class FrameView(FigureCanvas):
         if not self.frame_rows == rows or not self.frame_cols == cols:
             self.frame_rows = rows
             self.frame_cols = cols
-            self.showFrame = None
             if self.axes:
                 self.axes.clear()
+                self.has_patches = False
+                self.showFrame = None
         
         _, data = rFunct(fPath, self.frame_rows, self.frame_cols, offset, np.uint32)
         # get the frame saint ready 
