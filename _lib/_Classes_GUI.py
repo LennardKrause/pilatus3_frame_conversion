@@ -166,6 +166,15 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
     ##############################################
     ##         Frame Format definitions         ##
     ##############################################
+    def check_format(self, aFrame):
+        logging.info(self.__class__.__name__)
+        for aCheckFunc in self.availableFormats:
+            if aCheckFunc(aFrame):
+                return True
+            else:
+                continue
+        return False
+    
     def format_DLS(self, aFrame):
         logging.info(self.__class__.__name__)
         '''
@@ -177,8 +186,12 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             bname, ext = os.path.splitext(fname)
             if not ext == '.cbf':
                 return False
-            fsep = '_'
-            _split = bname.split(fsep)
+            # open file and check: _diffrn.id DLS_I19-1
+            with open(aFrame) as oFrame:
+                id = re.search('_diffrn.id\s+(?P<id>.+)', oFrame.read(2048)).group('id')
+            if not id == 'DLS_I19-1':
+                return
+            _split = bname.split('_')
             fnum = _split.pop()
             rnum = _split.pop()
             fstm = '_'.join(_split)
@@ -192,7 +205,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             self.fstem = fstm
             self.fpath = aFrame
             self.first = '00001.'
-            self.fdim = (1679, 1475, 4095) # (rows, cols, offset)
+            self.fdim = (1679, 1475, 0) # (rows, cols, offset)
             self.site = 'DLS'
             self.rfunct = read_pilatus_cbf
             self.rotate = False
@@ -211,8 +224,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             bname, ext = os.path.splitext(fname)
             if not ext == '.tif':
                 return False
-            fsep = '_'
-            _split = bname.split(fsep)
+            _split = bname.split('_')
             fnum = _split.pop()
             rnum = _split.pop()
             fstm = '_'.join(_split)
@@ -428,6 +440,10 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             # - e.g. if first frame is missing it's not considered a run!
             # - self.first gets defined by self.check_format()
             self.rList = sorted([os.path.abspath(f) for f in self.fList if self.first in f])
+            # generate the mask list here would save calling check_format a lot!
+            # - getting the run name however is non-trivial due to different naming conventions!
+            # - here: simple counting solution - bad idea!
+            #self.mList = [os.path.join(self.le_output.text(), '{}_xa_{:>02}_0001.sfrm'.format(self.fstem, i)) for i in range(len((self.rList)))]
             if len(self.rList) == 0:
                 return
             
@@ -448,16 +464,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             self.tabWidget.setTabEnabled(1, False)
         else:
             logging.info('You should not be able to read this message!')
-                
-    def check_format(self, aFrame):
-        logging.info(self.__class__.__name__)
-        for aCheckFunc in self.availableFormats:
-            if aCheckFunc(aFrame):
-                return True
-            else:
-                continue
-        return False
-    
+                    
     def create_output_directory(self, aPath):
         logging.info(self.__class__.__name__)
         # create output file path
