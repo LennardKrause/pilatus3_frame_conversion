@@ -158,6 +158,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         #########################################
         ##  Add new format identifiers here!   ##
         #########################################
+        self.exts = ('*_*.tif', '*_*.cbf')
         self.availableFormats = [self.format_SP8,
                                  self.format_APS,
                                  self.format_DLS]
@@ -165,7 +166,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
     ##############################################
     ##         Frame Format definitions         ##
     ##############################################
-    def format_DLS(self, aFrame, show_popup=True):
+    def format_DLS(self, aFrame):
         logging.info(self.__class__.__name__)
         '''
         Check the first file if reformatting to Bruker name format is possible
@@ -193,14 +194,13 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             self.first = '00001.'
             self.fdim = (1679, 1475, 4095) # (rows, cols, offset)
             self.site = 'DLS'
-            self.rList = sorted([os.path.abspath(i) for i in self.fList if self.first in i])
             self.rfunct = read_pilatus_cbf
             self.rotate = False
             return True
         except (ValueError, IndexError):
             return False
     
-    def format_APS(self, aFrame, show_popup=True):
+    def format_APS(self, aFrame):
         logging.info(self.__class__.__name__)
         '''
         Check the first file if reformatting to Bruker name format is possible
@@ -228,14 +228,13 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             self.first = '0001.'
             self.fdim = (1043, 981, 4096) # (rows, cols, offset)
             self.site = 'APS'
-            self.rList = sorted([os.path.abspath(i) for i in self.fList if self.first in i])
             self.rfunct = read_pilatus_tif
             self.rotate = True
             return True
         except (ValueError, IndexError):
             return False
     
-    def format_SP8(self, aFrame, show_popup=True):
+    def format_SP8(self, aFrame):
         logging.info(self.__class__.__name__)
         '''
         Check the first file if name is compatible with SPring-8 convention
@@ -262,7 +261,6 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             self.first = '001.'
             self.fdim = (1043, 981, 4096) # (rows, cols, offset)
             self.site = 'SP8'
-            self.rList = sorted([os.path.abspath(i) for i in self.fList if self.first in i])
             self.rfunct = read_pilatus_tif
             self.rotate = True
             return True
@@ -396,38 +394,40 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
            hence, to be fixed later, if ever.
         '''
         indexItem = self.model.index(index.row(), 0, index.parent())
-        cPath = self.model.filePath(indexItem)
+        fPath = self.model.filePath(indexItem)
         
         if self.cb_link.isChecked():
-            self.le_input.setText(cPath)
-            self.le_output.setText(cPath + self.suffix)
+            self.le_input.setText(fPath)
+            self.le_output.setText(fPath + self.suffix)
         
         elif self.paths_active == self.le_input:
-            self.le_input.setText(cPath)
+            self.le_input.setText(fPath)
         
         elif self.paths_active == self.le_output:
-            self.le_output.setText(cPath)
-            # don't continue to search for files
-            # if output is active
+            self.le_output.setText(fPath)
             return
         
         self.tb_convert.setText('Convert Images')
         self.tb_convert.setEnabled(False)
         
         # find files
-        self.fList = glob.glob(os.path.abspath(os.path.join(cPath, '*_*.tif')))
-        self.fList.extend(glob.glob(os.path.abspath(os.path.join(cPath, '*_*.cbf'))))
-        nFrames = len(self.fList)
+        fDir = QtCore.QDir()
+        fDir.setPath(fPath)
+        fDir.setNameFilters(self.exts)
+        fDir.setFilter(QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
+        nFrames = fDir.count()
         
-        # - check frame format: SP8 or APS
+        # - check frame format
         # - switch buttons (self.rb_SP8_Bruker or self.rb_APS_Bruker)
         if nFrames > 0:
-            aFrame = self.fList[0]
-            if not self.check_format(aFrame):
+            self.fList = [i.absoluteFilePath() for i in fDir.entryInfoList()]
+            if not self.check_format(self.fList[0]):
                 return
             
             # Incorrect/Incomplete runs may trigger this
             # - e.g. if first frame is missing it's not considered a run!
+            # - self.first gets defined by self.check_format()
+            self.rList = sorted([os.path.abspath(f) for f in self.fList if self.first in f])
             if len(self.rList) == 0:
                 return
             
@@ -452,7 +452,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
     def check_format(self, aFrame):
         logging.info(self.__class__.__name__)
         for aCheckFunc in self.availableFormats:
-            if aCheckFunc(aFrame, show_popup=False):
+            if aCheckFunc(aFrame):
                 return True
             else:
                 continue
