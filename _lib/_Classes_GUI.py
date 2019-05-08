@@ -41,7 +41,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.FVObj.frame_loaded.connect(self.fix_to_frame_dimensions.setFixedSize)
         
         # link gui to functions
-        self.tb_convert.clicked.connect(self.prepare_conversion)
+        self.tb_convert.clicked.connect(self.start_conversion)
         self.cb_link.stateChanged.connect(self.check_path_link)
         self.tb_mask_save.clicked.connect(self.mask_prepare_writing)
         self.hs_mask_int.valueChanged.connect(self.mask_change_frame_max_int)
@@ -49,7 +49,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.tb_mask_prev_img.clicked.connect(lambda: self.mask_change_image_rel(inc = -1))
         self.cb_mask_fname.currentIndexChanged.connect(self.mask_change_image_abs)
         self.tb_mask_reset.clicked.connect(self.FVObj.reset_patches)
-        self.tabWidget.currentChanged.connect(lambda: self.FVObj.frame_update(self.fList[0], *self.fdim, self.rfunct, self.rotate))
+        self.tabWidget.currentChanged.connect(lambda: self.FVObj.frame_update(self.fList[0], *self.finfo, self.ffunc, self.frota))
         
         # disable the beamstop draw tabWidget
         # enable if valid images are loaded
@@ -202,13 +202,13 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             _          = int(fnum)
             self.frnum = int(rnum)
             ###############################
-            self.fstem = fstm
-            self.fpath = aFrame
-            self.first = '00001.'
-            self.fdim = (1679, 1475, 0) # (rows, cols, offset)
-            self.site = 'DLS'
-            self.rfunct = read_pilatus_cbf
-            self.rotate = False
+            self.fstem = fstm              # Frame name up to the run number
+            self.fpath = aFrame            # Full path to frame incl. frame name
+            self.fstar = '00001.'          # Number indicating start of a run
+            self.finfo = (1679, 1475, 0)   # Frame info (rows, cols, offset)
+            self.fsite = 'DLS'             # Facility identifier
+            self.ffunc = read_pilatus_cbf  # Frame read function (from _Utility)
+            self.frota = False             # rotate the frame upon conversion?
             return True
         except (ValueError, IndexError):
             return False
@@ -235,13 +235,13 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             _          = int(fnum)
             self.frnum = int(rnum)
             ###############################
-            self.fstem = fstm
-            self.fpath = aFrame
-            self.first = '0001.'
-            self.fdim = (1043, 981, 4096) # (rows, cols, offset)
-            self.site = 'APS'
-            self.rfunct = read_pilatus_tif
-            self.rotate = True
+            self.fstem = fstm              # Frame name up to the run number
+            self.fpath = aFrame            # Full path to frame incl. frame name
+            self.fstar = '0001.'           # Number indicating start of a run
+            self.finfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
+            self.fsite = 'APS'             # Facility identifier
+            self.ffunc = read_pilatus_tif  # Frame read function (from _Utility)
+            self.frota = True              # rotate the frame upon conversion?
             return True
         except (ValueError, IndexError):
             return False
@@ -268,13 +268,13 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             _          = int(fnum)
             self.frnum = int(rnum)
             ###############################
-            self.fstem = fstm
-            self.fpath = aFrame
-            self.first = '001.'
-            self.fdim = (1043, 981, 4096) # (rows, cols, offset)
-            self.site = 'SP8'
-            self.rfunct = read_pilatus_tif
-            self.rotate = True
+            self.fstem = fstm              # Frame name up to the run number
+            self.fpath = aFrame            # Full path to frame incl. frame name
+            self.fstar = '001.'            # Number indicating start of a run
+            self.finfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
+            self.fsite = 'SP8'             # Facility identifier
+            self.ffunc = read_pilatus_tif  # Frame read function (from _Utility)
+            self.frota = True              # rotate the frame upon conversion?
             return True
         except ValueError:
             return False
@@ -300,7 +300,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         logging.info(self.__class__.__name__)
         aFrame = self.rList[idx]
         self.check_format(aFrame)
-        self.FVObj.frame_update(aFrame, *self.fdim, self.rfunct, self.rotate)
+        self.FVObj.frame_update(aFrame, *self.finfo, self.ffunc, self.frota)
         self.mask_check_stored(aFrame)
     
     def mask_change_image_rel(self, inc):
@@ -436,8 +436,8 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             
             # Incorrect/Incomplete runs may end in empty self.rList
             # - e.g. if first frame is missing it's not considered a run!
-            # - self.first is updated by self.check_format()
-            self.rList = sorted([os.path.abspath(f) for f in self.fList if self.first in f])
+            # - self.fstar is updated by self.check_format()
+            self.rList = sorted([os.path.abspath(f) for f in self.fList if self.fstar in f])
             # generate the mask list here would save calling check_format a lot!
             # - getting the run name however is non-trivial due to different naming conventions!
             # - here: simple counting solution - bad idea!
@@ -480,10 +480,9 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.le_output.setDisabled(toggle)
         self.treeView.setDisabled(toggle)
         
-    def prepare_conversion(self):
+    def start_conversion(self):
         logging.info(self.__class__.__name__)
         '''
-         function preceding the actual conversion:
           - assign data/sfrm paths
           - get files (again)
           - check for files
@@ -505,23 +504,10 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         if not self.fList:
             self.popup_window('Information', 'No suitable image files found.', 'Please check path.')
             return
+        
         # Make directories recursively
         self.create_output_directory(path_output)
         
-        # self.site tell start_conversion what to do!
-        self.start_conversion(self.site, path_output, self.fList)
-    
-    def start_conversion(self, source, path_output, file_list):
-        logging.info(self.__class__.__name__)
-        '''
-         create a pool of workers
-          - pool.apply_async, map doesn't work since we need to specify the output directory!
-          - the list 'results' together with 'callback=results.append' is used to track the conversion progress
-             - 'while len(results) != _todo' constantly checks results to update the progressbar
-          - pool.close(): close the pool when there are no more files left in 'self.fList'
-          - pool.join(): wait for remaining processes to finish
-        '''
-        logging.info(source)
         # disable main window elements
         # re-enabled after conversion finished
         # -> at end of 'start_conversion'
@@ -531,30 +517,42 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         # pass it on to the conversion function
         overwrite_flag = self.cb_overwrite.isChecked()
         
+        # create a pool of workers
+        #  - pool.apply_async, map doesn't work since we need to specify the output directory!
+        #  - the list 'results' together with 'callback=results.append' is used to track the conversion progress
+        #     - 'while len(results) != _todo' constantly checks results to update the progressbar
+        #  - pool.close(): close the pool when there are no more files left in 'self.fList'
+        #  - pool.join(): wait for remaining processes to finish
         with multiprocessing.Pool() as pool:
             #########################################
             ##  Add new format identifiers here!   ##
             #########################################
             # fork here according to specified facility
-            #  - conversion: what _utility.py function to call
+            #  - conversion: what _Utility.py function to call
             #  - parameters: parameters for the conversion function
             #     - path_output, dimension1, dimension2, overwrite_flag
             #     - more if needed, e.g. SP8 2-th correction value
-            if source == 'APS':
+            if self.fsite == 'APS':
+                rows, cols, offset = self.finfo
                 conversion = convert_frame_APS_Bruker
-                parameters = [path_output, overwrite_flag]
-            elif source == 'SP8':
+                args = [path_output]
+                kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
+            elif self.fsite == 'SP8':
+                rows, cols, offset = self.finfo
                 # check data collection timestamp
-                with open(file_list[0], 'rb') as ofile:
+                with open(self.fpath, 'rb') as ofile:
                     year = int(re.search(b'(\d{4}):\d{2}:\d{2}\s+\d{2}:\d{2}:\d{2}', ofile.read(64)).group(1).decode())
                 SP8_tth_corr = 0.0
                 if year < 2019:
                     SP8_tth_corr = 4.8
                 conversion = convert_frame_SP8_Bruker
-                parameters = [path_output, SP8_tth_corr, overwrite_flag]
-            elif source == 'DLS':
+                args = [path_output]
+                kwargs = {'tth_corr':SP8_tth_corr, 'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
+            elif self.fsite == 'DLS':
+                rows, cols, offset = self.finfo
                 conversion = convert_frame_DLS_Bruker
-                parameters = [path_output, overwrite_flag]
+                args = [path_output]
+                kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
             else:
                 self.popup_window('Information', 'Unknown facility!', '')
                 return
@@ -565,11 +563,11 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             
             # feed the pool
             results = []
-            for fname in file_list:
-                pool.apply_async(conversion, args=[fname] + parameters, callback=results.append)
+            for fname in self.fList:
+                x = pool.apply_async(conversion, args=[fname] + args, kwds=kwargs, callback=results.append)
             
             # update the progress
-            _todo = len(file_list)
+            _todo = len(self.fList)
             while len(results) != _todo:
                 progress = float(len(results)) / float(_todo) * 100.0
                 self.pb_convert.setValue(progress)
@@ -579,7 +577,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
                 if len(results) > 0:
                     # conversion in progress
                     self.statusBar.show()
-                    self.status.setText('{}'.format(os.path.basename(file_list[len(results)-1])))
+                    self.status.setText('{}'.format(os.path.basename(self.fList[len(results)-1])))
             # exit and wait
             pool.close()
             pool.join()
