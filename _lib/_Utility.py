@@ -517,7 +517,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     
     # extract scan info from tif header
     scan_flx = float(re.search('Flux\s+(\d+\.\d+)', header).groups()[0])
-    scan_exr = float(re.search('Exposure_time\s+(\d+\.\d+)\s+s', header).groups()[0])
+    scan_ext = float(re.search('Exposure_time\s+(\d+\.\d+)\s+s', header).groups()[0])
     scan_exp = float(re.search('Exposure_period\s+(\d+\.\d+)\s+s', header).groups()[0])
     goni_dxt = float(re.search('Detector_distance\s+(\d+\.\d+)\s+m', header).groups()[0]) * 1000.0
     source_w = float(re.search('Wavelength\s+(\d+\.\d+)\s+A', header).groups()[0])
@@ -570,7 +570,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     header['WAVELEN'][:] = [source_w, source_w, source_w]            # Wavelengths (average, a1, a2)
     header['FILENAM']    = [basename]
     header['CUMULAT']    = [scan_exp]                                # Accumulated exposure time in real hours
-    header['ELAPSDR']    = [scan_exr]                                # Requested time for this frame in seconds
+    header['ELAPSDR']    = [scan_ext]                                # Requested time for this frame in seconds
     header['ELAPSDA']    = [scan_exp]                                # Actual time for this frame in seconds
     header['START'][:]   = scan_sta                                  # Starting scan angle value, decimal deg
     header['ANGLES'][:]  = [goni_tth, goni_omg, scan_sta, goni_chi]  # Diffractometer setting angles, deg. (2Th, omg, phi, chi)
@@ -803,7 +803,7 @@ def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, offset=0, o
     data += baseline_offset
     
     # extract scan info from tif header
-    sca_exr = float(re.search('Exposure_time\s+(\d+\.\d+)\s+s', header).groups()[0])
+    sca_ext = float(re.search('Exposure_time\s+(\d+\.\d+)\s+s', header).groups()[0])
     sca_exp = float(re.search('Exposure_period\s+(\d+\.\d+)\s+s', header).groups()[0])
     gon_dxt = float(re.search('Detector_distance\s+(\d+\.\d+)\s+m', header).groups()[0]) * 1000.0
     src_wav = float(re.search('Wavelength\s+(\d+\.\d+)\s+A', header).groups()[0])
@@ -868,7 +868,7 @@ def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, offset=0, o
     header['WAVELEN'][:] = [src_wav, src_wav, src_wav]               # Wavelengths (average, a1, a2)
     header['FILENAM']    = [basename]
     header['CUMULAT']    = [sca_exp]                                 # Accumulated exposure time in real hours
-    header['ELAPSDR']    = [sca_exr]                                 # Requested time for this frame in seconds
+    header['ELAPSDR']    = [sca_ext]                                 # Requested time for this frame in seconds
     header['ELAPSDA']    = [sca_exp]                                 # Actual time for this frame in seconds
     header['START'][:]   = sca_sta                                   # Starting scan angle value, decimal deg
     header['ANGLES'][:]  = [sta_tth, sta_omg, sta_phi, sta_chi]      # Diffractometer setting angles, deg. (2Th, omg, phi, chi)
