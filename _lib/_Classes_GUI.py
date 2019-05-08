@@ -429,16 +429,14 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         fDir.setFilter(QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
         nFrames = fDir.count()
         
-        # - check frame format
-        # - switch buttons (self.rb_SP8_Bruker or self.rb_APS_Bruker)
         if nFrames > 0:
             self.fList = [i.absoluteFilePath() for i in fDir.entryInfoList()]
             if not self.check_format(self.fList[0]):
                 return
             
-            # Incorrect/Incomplete runs may trigger this
+            # Incorrect/Incomplete runs may end in empty self.rList
             # - e.g. if first frame is missing it's not considered a run!
-            # - self.first gets defined by self.check_format()
+            # - self.first is updated by self.check_format()
             self.rList = sorted([os.path.abspath(f) for f in self.fList if self.first in f])
             # generate the mask list here would save calling check_format a lot!
             # - getting the run name however is non-trivial due to different naming conventions!
@@ -447,9 +445,10 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             if len(self.rList) == 0:
                 return
             
-            # clear combobox
+            # clearing and adding to combobox triggers it's .currentIndexChanged()
+            # block signals to not call self.mask_change_image_abs
             self.cb_mask_fname.blockSignals(True)
-            # clearing calls self.mask_change_image_abs
+            # clear combobox
             self.cb_mask_fname.clear()
             # add runs to combobox
             [self.cb_mask_fname.addItem(os.path.basename(i)) for i in self.rList]
