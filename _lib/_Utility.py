@@ -467,7 +467,7 @@ def fix_bad_pixel(data, flag, bad_int=-2, sat_val=2**20):
         data[data == bad_int] = 0
     return data
 
-def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=True):
+def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096, overwrite=True):
     '''
     
     '''
@@ -478,7 +478,6 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=Tr
     # split path, name and extension
     path_to, frame_name = os.path.split(fname)
     basename, ext = os.path.splitext(frame_name)
-    
     # try to get the run and frame number from the filename
     # any_name_runNum_frmNum.sfrm is assumed.
     try:
@@ -487,8 +486,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=Tr
         runNum = int(_split.pop())
         stem = '_'.join(_split)
     except ValueError:
-        frmNum = 1
-        runNum = 1
+        return False
     
     # output file
     outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(stem, runNum, frmNum))
@@ -498,7 +496,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=Tr
         return False
     
     # read in the frame
-    header, data = read_pilatus_tif(fname, rows, cols, 4096, np.int32)
+    header, data = read_pilatus_tif(fname, rows, cols, offset, np.int32)
     
     # get the frame saint ready 
     # - pad with zeros
@@ -604,7 +602,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, overwrite=Tr
     write_bruker_frame(outName, header, data)
     return True
 
-def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981, overwrite=True):
+def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981, offset=4096, overwrite=True):
     '''
      
     '''
@@ -627,7 +625,7 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
         return False
     
     # read in the frame
-    _, data = read_pilatus_tif(fname, rows, cols, 4096, np.int32)
+    _, data = read_pilatus_tif(fname, rows, cols, offset, np.int32)
     
     # get the frame saint ready
     # - pad with zeros
@@ -755,7 +753,7 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     write_bruker_frame(outName, header, data)
     return True
 
-def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, overwrite=True):
+def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, offset=0, overwrite=True):
     '''
     
     '''
