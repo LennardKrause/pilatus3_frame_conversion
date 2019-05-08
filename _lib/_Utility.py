@@ -516,6 +516,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     data += baseline_offset
     
     # extract scan info from tif header
+    scan_flx = float(re.search('Flux\s+(\d+\.\d+)', header).groups()[0])
     scan_exr = float(re.search('Exposure_time\s+(\d+\.\d+)\s+s', header).groups()[0])
     scan_exp = float(re.search('Exposure_period\s+(\d+\.\d+)\s+s', header).groups()[0])
     goni_dxt = float(re.search('Detector_distance\s+(\d+\.\d+)\s+m', header).groups()[0]) * 1000.0
@@ -575,7 +576,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     header['ANGLES'][:]  = [goni_tth, goni_omg, scan_sta, goni_chi]  # Diffractometer setting angles, deg. (2Th, omg, phi, chi)
     header['ENDING'][:]  = [goni_tth, goni_omg, scan_end, goni_chi]  # Setting angles read at end of scan
     header['TYPE']       = ['Generic Phi Scan']                      # String indicating kind of data in the frame
-    header['DISTANC']    = [float(goni_dxt) / 10.0]                  # Sample-detector distance, cm
+    header['DISTANC']    = [goni_dxt / 10.0]                         # Sample-detector distance, cm
     header['RANGE']      = [abs(scan_inc)]                           # Magnitude of scan range in decimal degrees
     header['INCREME']    = [scan_inc]                                # Signed scan angle increment between frames
     header['NUMBER']     = [frmNum]                                  # Number of this frame in series (zero-based)
@@ -586,7 +587,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     header['MAXXY']      = np.array(np.where(data == data.max()), np.float)[:, 0]
     header['MAXIMUM']    = [np.max(data)]
     header['MINIMUM']    = [np.min(data)]
-    header['NCOUNTS'][:] = [data.sum(), 0]
+    header['NCOUNTS'][:] = [data.sum(), scan_flx]
     header['NPIXELB'][:] = [1, 1]                                    # bytes/pixel in main image, bytes/pixel in underflow table
     header['NOVER64'][:] = [data[data > 64000].shape[0], 0, 0]
     header['NSTEPS']     = [1]                                       # steps or oscillations in this frame
