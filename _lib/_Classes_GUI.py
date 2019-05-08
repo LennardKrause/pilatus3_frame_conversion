@@ -35,10 +35,10 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.init_file_browser()
         
         # init FrameView class
-        self.FrameViewClassObject = FrameView()
-        self.wi_frameContainer.insertWidget(0, self.FrameViewClassObject)
-        self.FrameViewClassObject.mask_written.connect(self.mask_check_stored)
-        self.FrameViewClassObject.frame_loaded.connect(self.fix_to_frame_dimensions.setFixedSize)
+        self.FVObj = FrameView()
+        self.wi_frameContainer.insertWidget(0, self.FVObj)
+        self.FVObj.mask_written.connect(self.mask_check_stored)
+        self.FVObj.frame_loaded.connect(self.fix_to_frame_dimensions.setFixedSize)
         
         # link gui to functions
         self.tb_convert.clicked.connect(self.prepare_conversion)
@@ -48,11 +48,11 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.tb_mask_next_img.clicked.connect(lambda: self.mask_change_image_rel(inc =  1))
         self.tb_mask_prev_img.clicked.connect(lambda: self.mask_change_image_rel(inc = -1))
         self.cb_mask_fname.currentIndexChanged.connect(self.mask_change_image_abs)
-        self.tb_mask_reset.clicked.connect(self.FrameViewClassObject.reset_patches)
-        #self.tabWidget.currentChanged.connect(lambda: self.FrameViewClassObject.frame_update(self.fList[0], *self.fdim, self.rfunct, self.rotate))
+        self.tb_mask_reset.clicked.connect(self.FVObj.reset_patches)
+        self.tabWidget.currentChanged.connect(lambda: self.FVObj.frame_update(self.fList[0], *self.fdim, self.rfunct, self.rotate))
         
-        # disable beamstop draw tabWidget
-        # enable when valid images are loaded
+        # disable the beamstop draw tabWidget
+        # enable if valid images are loaded
         self.tabWidget.setTabEnabled(1, False)
         
         # hide progress and status-bar on startup
@@ -287,11 +287,11 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         oPath = os.path.abspath(self.le_output.text())
         self.create_output_directory(oPath)
         aMask = os.path.join(oPath, '{}_xa_{:>02}_0001.sfrm'.format(self.fstem, int(self.frnum)))
-        self.FrameViewClassObject.convert_patches_to_mask(self.fpath, aMask)
+        self.FVObj.convert_patches_to_mask(self.fpath, aMask)
     
     def mask_check_stored(self, aFrame):
         logging.info(self.__class__.__name__)
-        if aFrame in self.FrameViewClassObject.masks:
+        if aFrame in self.FVObj.masks:
             self.cb_mask_stored.setChecked(True)
         else:
             self.cb_mask_stored.setChecked(False)
@@ -300,7 +300,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         logging.info(self.__class__.__name__)
         aFrame = self.rList[idx]
         self.check_format(aFrame)
-        self.FrameViewClassObject.frame_update(aFrame, *self.fdim, self.rfunct, self.rotate)
+        self.FVObj.frame_update(aFrame, *self.fdim, self.rfunct, self.rotate)
         self.mask_check_stored(aFrame)
     
     def mask_change_image_rel(self, inc):
@@ -313,9 +313,9 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
     
     def mask_change_frame_max_int(self):
         #logging.info(self.__class__.__name__)
-        self.FrameViewClassObject.intMax = self.hs_mask_int.value()
-        self.FrameViewClassObject.showFrame.set_clim(vmin=0, vmax=self.hs_mask_int.value())
-        self.FrameViewClassObject.draw()
+        self.FVObj.intMax = self.hs_mask_int.value()
+        self.FVObj.showFrame.set_clim(vmin=0, vmax=self.hs_mask_int.value())
+        self.FVObj.draw()
         
     def eventFilter(self, obj, event):
         #logging.info(self.__class__.__name__)
@@ -448,10 +448,12 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
                 return
             
             # clear combobox
+            self.cb_mask_fname.blockSignals(True)
             # clearing calls self.mask_change_image_abs
             self.cb_mask_fname.clear()
             # add runs to combobox
             [self.cb_mask_fname.addItem(os.path.basename(i)) for i in self.rList]
+            self.cb_mask_fname.blockSignals(False)
             
             # if we are here we may allow conversion
             # - the check for the .inf files (SP8 data) is done
