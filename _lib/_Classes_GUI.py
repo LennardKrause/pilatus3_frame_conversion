@@ -31,7 +31,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.le_input.installEventFilter(self)
         self.le_output.installEventFilter(self)
         
-        # initiate the filebrowse
+        # initiate the filebrowser
         self.init_file_browser()
         
         # init FrameView class
@@ -40,7 +40,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.FVObj.mask_written.connect(self.mask_check_stored)
         self.FVObj.frame_loaded.connect(self.fix_to_frame_dimensions.setFixedSize)
         
-        # link gui to functions
+        # link GUI to functions
         self.tb_convert.clicked.connect(self.start_conversion)
         self.cb_link.stateChanged.connect(self.check_path_link)
         self.tb_mask_save.clicked.connect(self.mask_prepare_writing)
@@ -51,7 +51,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.tb_mask_reset.clicked.connect(self.FVObj.reset_patches)
         self.tabWidget.currentChanged.connect(self.on_tab_change)
         
-        # disable the beamstop draw tabWidget
+        # disable the draw-mask tabWidget
         # enable if valid images are loaded
         self.tabWidget.setTabEnabled(1, False)
         
@@ -85,15 +85,16 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.treeView.setAnimated(False)
         self.treeView.setIndentation(20)
         #self.treeView.setSortingEnabled(True)
+        # don't strech last column
         self.treeView.header().setStretchLastSection(False)
+        # stretch first
         self.treeView.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         # hide 'size' and 'type' header columns
         self.treeView.setColumnHidden(1, True)
         self.treeView.setColumnHidden(2, True)
         
         # scroll the treeview to start_dir
-        # apply start_dir as current dir
-        # by calling the 'on_click' function
+        # apply start_dir as current dir by calling the 'on_click' function
         start_dir = os.getcwd()
         self.treeView.scrollTo(self.model.index(start_dir))
         self.on_treeView_clicked(self.model.index(start_dir))
