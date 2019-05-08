@@ -49,7 +49,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.tb_mask_prev_img.clicked.connect(lambda: self.mask_change_image_rel(inc = -1))
         self.cb_mask_fname.currentIndexChanged.connect(self.mask_change_image_abs)
         self.tb_mask_reset.clicked.connect(self.FVObj.reset_patches)
-        self.tabWidget.currentChanged.connect(lambda: self.FVObj.frame_update(self.fList[0], *self.finfo, self.ffunc, self.frota))
+        self.tabWidget.currentChanged.connect(self.on_tab_change)
         
         # disable the beamstop draw tabWidget
         # enable if valid images are loaded
@@ -148,9 +148,9 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         '''
          
         '''
-        self.frnum = None
-        self.fstem = None
-        self.fpath = None
+        self.fRnum = None
+        self.fStem = None
+        self.fPath = None
         self.rList = []
         self.fList = []
         self.suffix = '_sfrm'
@@ -200,15 +200,15 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             ##   we assume DLS format!   ##
             ###############################
             _          = int(fnum)
-            self.frnum = int(rnum)
+            self.fRnum = int(rnum)
             ###############################
-            self.fstem = fstm              # Frame name up to the run number
-            self.fpath = aFrame            # Full path to frame incl. frame name
-            self.fstar = '00001.'          # Number indicating start of a run
-            self.finfo = (1679, 1475, 0)   # Frame info (rows, cols, offset)
-            self.fsite = 'DLS'             # Facility identifier
-            self.ffunc = read_pilatus_cbf  # Frame read function (from _Utility)
-            self.frota = False             # rotate the frame upon conversion?
+            self.fStem = fstm              # Frame name up to the run number
+            self.fPath = aFrame            # Full path to frame incl. frame name
+            self.fStar = '00001.'          # Number indicating start of a run
+            self.fInfo = (1679, 1475, 0)   # Frame info (rows, cols, offset)
+            self.fSite = 'DLS'             # Facility identifier
+            self.fFunc = read_pilatus_cbf  # Frame read function (from _Utility)
+            self.fRota = False             # rotate the frame upon conversion?
             return True
         except (ValueError, IndexError):
             return False
@@ -233,15 +233,15 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             ##   we assume APS format!   ##
             ###############################
             _          = int(fnum)
-            self.frnum = int(rnum)
+            self.fRnum = int(rnum)
             ###############################
-            self.fstem = fstm              # Frame name up to the run number
-            self.fpath = aFrame            # Full path to frame incl. frame name
-            self.fstar = '0001.'           # Number indicating start of a run
-            self.finfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
-            self.fsite = 'APS'             # Facility identifier
-            self.ffunc = read_pilatus_tif  # Frame read function (from _Utility)
-            self.frota = True              # rotate the frame upon conversion?
+            self.fStem = fstm              # Frame name up to the run number
+            self.fPath = aFrame            # Full path to frame incl. frame name
+            self.fStar = '0001.'           # Number indicating start of a run
+            self.fInfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
+            self.fSite = 'APS'             # Facility identifier
+            self.fFunc = read_pilatus_tif  # Frame read function (from _Utility)
+            self.fRota = True              # rotate the frame upon conversion?
             return True
         except (ValueError, IndexError):
             return False
@@ -266,15 +266,15 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             ##   we assume SP8 format!   ##
             ###############################
             _          = int(fnum)
-            self.frnum = int(rnum)
+            self.fRnum = int(rnum)
             ###############################
-            self.fstem = fstm              # Frame name up to the run number
-            self.fpath = aFrame            # Full path to frame incl. frame name
-            self.fstar = '001.'            # Number indicating start of a run
-            self.finfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
-            self.fsite = 'SP8'             # Facility identifier
-            self.ffunc = read_pilatus_tif  # Frame read function (from _Utility)
-            self.frota = True              # rotate the frame upon conversion?
+            self.fStem = fstm              # Frame name up to the run number
+            self.fPath = aFrame            # Full path to frame incl. frame name
+            self.fStar = '001.'            # Number indicating start of a run
+            self.fInfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
+            self.fSite = 'SP8'             # Facility identifier
+            self.fFunc = read_pilatus_tif  # Frame read function (from _Utility)
+            self.fRota = True              # rotate the frame upon conversion?
             return True
         except ValueError:
             return False
@@ -286,8 +286,8 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         logging.info(self.__class__.__name__)
         oPath = os.path.abspath(self.le_output.text())
         self.create_output_directory(oPath)
-        aMask = os.path.join(oPath, '{}_xa_{:>02}_0001.sfrm'.format(self.fstem, int(self.frnum)))
-        self.FVObj.convert_patches_to_mask(self.fpath, aMask)
+        aMask = os.path.join(oPath, '{}_xa_{:>02}_0001.sfrm'.format(self.fStem, int(self.fRnum)))
+        self.FVObj.convert_patches_to_mask(self.fPath, aMask)
     
     def mask_check_stored(self, aFrame):
         logging.info(self.__class__.__name__)
@@ -298,10 +298,10 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
     
     def mask_change_image_abs(self, idx):
         logging.info(self.__class__.__name__)
-        aFrame = self.rList[idx]
+        aFrame = os.path.abspath(self.rList[idx])
         self.check_format(aFrame)
-        self.FVObj.frame_update(aFrame, *self.finfo, self.ffunc, self.frota)
         self.mask_check_stored(aFrame)
+        self.FVObj.frame_update(aFrame, *self.fInfo, self.fFunc, self.fRota)
     
     def mask_change_image_rel(self, inc):
         logging.info(self.__class__.__name__)
@@ -315,6 +315,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         #logging.info(self.__class__.__name__)
         self.FVObj.intMax = self.hs_mask_int.value()
         self.FVObj.showFrame.set_clim(vmin=0, vmax=self.hs_mask_int.value())
+        self.FVObj.cmap_max = self.hs_mask_int.value()
         self.FVObj.draw()
         
     def eventFilter(self, obj, event):
@@ -396,6 +397,16 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             self.paths_active = self.le_output
             self.paths_active.setStyleSheet(self.le_style_single)
         
+    def on_tab_change(self, idx):
+        '''
+         update frame only if Frameviewer tab is opened
+        '''
+        if idx == 1:
+            self.mask_check_stored(self.fPath)
+            self.FVObj.frame_update(self.fPath, *self.fInfo, self.fFunc, self.fRota)
+        else:
+            return
+    
     def on_treeView_clicked(self, index):
         logging.info(self.__class__.__name__)
         '''
@@ -406,17 +417,17 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
            hence, to be fixed later, if ever.
         '''
         indexItem = self.model.index(index.row(), 0, index.parent())
-        fPath = self.model.filePath(indexItem)
+        curPath = os.path.abspath(self.model.filePath(indexItem))
         
         if self.cb_link.isChecked():
-            self.le_input.setText(fPath)
-            self.le_output.setText(fPath + self.suffix)
+            self.le_input.setText(curPath)
+            self.le_output.setText(curPath + self.suffix)
         
         elif self.paths_active == self.le_input:
-            self.le_input.setText(fPath)
+            self.le_input.setText(curPath)
         
         elif self.paths_active == self.le_output:
-            self.le_output.setText(fPath)
+            self.le_output.setText(curPath)
             return
         
         self.tb_convert.setText('Convert Images')
@@ -424,24 +435,24 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         
         # find files
         fDir = QtCore.QDir()
-        fDir.setPath(fPath)
+        fDir.setPath(curPath)
         fDir.setNameFilters(self.exts)
         fDir.setFilter(QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
         nFrames = fDir.count()
         
         if nFrames > 0:
             self.fList = [i.absoluteFilePath() for i in fDir.entryInfoList()]
-            if not self.check_format(self.fList[0]):
+            if not self.check_format(os.path.abspath(self.fList[0])):
                 return
             
             # Incorrect/Incomplete runs may end in empty self.rList
             # - e.g. if first frame is missing it's not considered a run!
-            # - self.fstar is updated by self.check_format()
-            self.rList = sorted([os.path.abspath(f) for f in self.fList if self.fstar in f])
+            # - self.fStar is updated by self.check_format()
+            self.rList = sorted([os.path.abspath(f) for f in self.fList if self.fStar in f])
             # generate the mask list here would save calling check_format a lot!
             # - getting the run name however is non-trivial due to different naming conventions!
             # - here: simple counting solution - bad idea!
-            #self.mList = [os.path.join(self.le_output.text(), '{}_xa_{:>02}_0001.sfrm'.format(self.fstem, i)) for i in range(len((self.rList)))]
+            #self.mList = [os.path.join(self.le_output.text(), '{}_xa_{:>02}_0001.sfrm'.format(self.fStem, i)) for i in range(len((self.rList)))]
             if len(self.rList) == 0:
                 return
             
@@ -532,15 +543,15 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             #  - parameters: parameters for the conversion function
             #     - path_output, dimension1, dimension2, overwrite_flag
             #     - more if needed, e.g. SP8 2-th correction value
-            if self.fsite == 'APS':
-                rows, cols, offset = self.finfo
+            if self.fSite == 'APS':
+                rows, cols, offset = self.fInfo
                 conversion = convert_frame_APS_Bruker
                 args = [path_output]
                 kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
-            elif self.fsite == 'SP8':
-                rows, cols, offset = self.finfo
+            elif self.fSite == 'SP8':
+                rows, cols, offset = self.fInfo
                 # check data collection timestamp
-                with open(self.fpath, 'rb') as ofile:
+                with open(self.fPath, 'rb') as ofile:
                     year = int(re.search(b'(\d{4}):\d{2}:\d{2}\s+\d{2}:\d{2}:\d{2}', ofile.read(64)).group(1).decode())
                 SP8_tth_corr = 0.0
                 if year < 2019:
@@ -548,8 +559,8 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
                 conversion = convert_frame_SP8_Bruker
                 args = [path_output]
                 kwargs = {'tth_corr':SP8_tth_corr, 'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
-            elif self.fsite == 'DLS':
-                rows, cols, offset = self.finfo
+            elif self.fSite == 'DLS':
+                rows, cols, offset = self.fInfo
                 conversion = convert_frame_DLS_Bruker
                 args = [path_output]
                 kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
