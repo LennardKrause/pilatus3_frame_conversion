@@ -556,7 +556,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
                     year = int(re.search(b'(\d{4}):\d{2}:\d{2}\s+\d{2}:\d{2}:\d{2}', ofile.read(64)).group(1).decode())
                 SP8_tth_corr = 0.0
                 if year < 2019:
-                    SP8_tth_corr = 4.8
+                    SP8_tth_corr = 0.048
                 conversion = convert_frame_SP8_Bruker
                 args = [path_output]
                 kwargs = {'tth_corr':SP8_tth_corr, 'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
