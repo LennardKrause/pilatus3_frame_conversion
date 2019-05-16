@@ -1,6 +1,6 @@
 # pilatus3_frame_conversion
 
-pilatus3-fc.py offers an easy-to-use GUI to convert Pilatus3 images to the Bruker .sfrm format and helps generating proper integration masks for the Bruker integration engine SAINT.
+pilatus3-fc.py offers an easy-to-use GUI to convert Pilatus3 images to the Bruker .sfrm format and helps generating proper integration masks for the Bruker SAINT+ integration engine that is part of the [APEX3 Software](https://www.bruker.com/products/x-ray-diffraction-and-elemental-analysis/single-crystal-x-ray-diffraction/sc-xrd-software/overview/sc-xrd-software/apex3.html).
 
 It is currently designed to convert data collected at the following facilities / beamlines:
   - Advanced Photon Source / 15ID-D
