@@ -16,6 +16,6 @@ It is currently designed to convert data collected at the following facilities /
 ### Python 3.5 or later
 
 ### Used libraries (tested with):
-    - numpy (1.16.3) https://www.numpy.org/
+  - numpy (1.16.3)     https://www.numpy.org/
   - matplotlib (3.0.3) https://matplotlib.org/
-  - PyQt5 (5.12.2) https://www.riverbankcomputing.com/software/pyqt/intro/
+  - PyQt5 (5.12.2)     https://www.riverbankcomputing.com/software/pyqt/intro/
