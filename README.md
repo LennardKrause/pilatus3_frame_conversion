@@ -7,6 +7,11 @@ It is currently designed to convert data collected at the following facilities /
   - SPring-8 / BL02B1
   - Diamond Light Source / I19-1
 
+SAINT+ Integration Engine V8.35A
+-
+  - requirement that frames consist of multiples of 512 pixels has been lifted
+  - any frame size is now allowed
+
 Tested with Python 3.5.3
 
 # Used libraries (tested with):
