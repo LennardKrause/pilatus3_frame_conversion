@@ -9,13 +9,13 @@ It is currently designed to convert data collected at the following facilities /
 
 ## Requirements
 
-### Bruker SAINT+ Integration Engine V8.35A
+### Bruker SAINT+ Integration Engine V8.35A or later
   - requirement that frames consist of multiples of 512 pixels has been lifted
   - any frame size is now allowed
 
 ### Python 3.5 or later
 
-### Used libraries (tested with):
+### Libraries (tested with):
   - numpy (1.16.3)     https://www.numpy.org/
   - matplotlib (3.0.3) https://matplotlib.org/
   - PyQt5 (5.12.2)     https://www.riverbankcomputing.com/software/pyqt/intro/
