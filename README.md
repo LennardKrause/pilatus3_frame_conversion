@@ -21,3 +21,4 @@ It is currently designed to convert data collected at the following synchrotron 
   - [PyQt5 (5.12.2)](https://www.riverbankcomputing.com/software/pyqt/intro/)
 
 ![img_gui_convert](https://user-images.githubusercontent.com/48315771/57973478-82a81c00-79a9-11e9-88e6-2addb86d70c7.png)
+![img_gui_draw](https://user-images.githubusercontent.com/48315771/57973484-9a7fa000-79a9-11e9-9144-379d21f10f01.png)
