@@ -20,6 +20,20 @@ It is currently designed to convert data collected at the following synchrotron 
   - [matplotlib (3.0.3)](https://matplotlib.org/)
   - [PyQt5 (5.12.2)](https://www.riverbankcomputing.com/software/pyqt/intro/)
 
-Convert Tab | Draw Tab
------------ | --------
+## Program Layout
+Filebrowser / Image Conversion - Tab | Draw Beamstop - Tab
+------------------------------------ | -------------------
 ![img_gui_convert](https://user-images.githubusercontent.com/48315771/57973478-82a81c00-79a9-11e9-88e6-2addb86d70c7.png) | ![img_gui_draw](https://user-images.githubusercontent.com/48315771/57973484-9a7fa000-79a9-11e9-9144-379d21f10f01.png)
+
+### Filebrowser / Image Conversion
+
+### Draw Beamstop
+Once a folder with valid frames is selected, the Draw Beamstop tab becomes available. The filebrowser is disabled during conversion, however, the drawing tab is not. It is recommended to start the frame conversion prior to drawing the mask as it assures that the mask files are stored in the same folder as the converted frames. The image is shown in native resolution, use the scroll bars to navigate to the beamstop shadow. Drag and adjust the patches (rectangle, ellipse) to where they are needed. The intrinsic dead areas of the Pilatus3 detector and dead pixels are masked automatically. If a patch is not needed, simply adjust its size and put it onto a dead area. General usage:
+ - *Left* click/drag on either patch to move it
+ - *Right* click/drag (hold Control) to adjust shape and size
+ - *Middle* click/drag (hold Shift) Rectangle adjusts angle
+ - *Double click* on Rectangle to flip up/down
+ - Use the *slider* to adjust the contrast
+ - Use the *arrow keys* to switch between runs
+ - Hit *Save Mask* to save the current mask
+ The masks are saved to Output Directory (once Save Mask is pressed) and follow a name convention internally used by SAINT so no further steps are needed in order to use the masks!
