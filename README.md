@@ -36,6 +36,7 @@ Once a folder with valid frames is selected, the Draw Beamstop tab becomes avail
  - *Double click* on Rectangle to flip up/down
  - Use the *slider* to adjust the contrast
  - Use the *arrow keys* to switch between runs
- - Hit *Save Mask* to save the current mask
+ - Press *Save Mask* to save the current mask
+ - *Reset Mask* resets both patches to their initial states
 
 The masks are saved to *Output Directory* (once Save Mask is pressed) and follow a name convention internally used by SAINT so no further steps are needed in order to use the masks!
