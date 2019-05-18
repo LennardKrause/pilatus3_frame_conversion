@@ -19,3 +19,5 @@ It is currently designed to convert data collected at the following synchrotron 
   - [numpy (1.16.3)](https://www.numpy.org/)
   - [matplotlib (3.0.3)](https://matplotlib.org/)
   - [PyQt5 (5.12.2)](https://www.riverbankcomputing.com/software/pyqt/intro/)
+
+![img_gui_convert](https://user-images.githubusercontent.com/48315771/57973478-82a81c00-79a9-11e9-88e6-2addb86d70c7.png)
