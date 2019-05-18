@@ -34,7 +34,7 @@ Once a folder with valid frames is selected, the Draw Beamstop tab becomes avail
  - *Right* click/drag (hold Control) to adjust shape and size
  - *Middle* click/drag (hold Shift) Rectangle adjusts angle
  - *Double click* on Rectangle to flip up/down
- - Use the *slider* to adjust the contrast
+ - Use the *Intensity* slider to adjust the contrast
  - Use the *arrow keys* to switch between runs
  - Press *Save Mask* to save the current mask
  - *Reset Mask* resets both patches to their initial states
