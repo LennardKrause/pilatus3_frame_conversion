@@ -30,6 +30,7 @@ Use the filebrowser to navigate to the frame folder, it may take a while to read
 
 ### Draw Beamstop
 Once a folder with valid frames is selected, the *Draw Beamstop* tab becomes available. The filebrowser is disabled during conversion, however, the drawing tab is not. It is recommended to start the frame conversion prior to drawing masks as it assures that the mask files are stored in the same folder as the converted frames. The image is shown in native resolution, use the scroll bars to navigate to the beamstop shadow. Drag and adjust the patches (rectangle, ellipse) to where they are needed. The intrinsic dead areas of the Pilatus3 detector and bad pixels are masked automatically. If a patch is not needed, simply adjust its size and put it onto a dead area. A saved mask is indicated by a green dot in the lower right corner and a color change of the patches. Saving a mask stores the position and the shape of the patches. General usage:
+
  - Left click + drag on either patch to move it
  - Right click + drag (or hold *Control*) to adjust the shape and size
  - Middle click + drag (or hold *Shift*) to change the angle
@@ -38,4 +39,5 @@ Once a folder with valid frames is selected, the *Draw Beamstop* tab becomes ava
  - Navigate between runs using the *arrow keys*
  - Press *Save Mask* to save the current mask
  - *Reset Mask* resets both patches to their initial states
+
 The masks are saved to *Output Directory* (once Save Mask is pressed) and follow a name convention internally used by SAINT so no further steps are needed in order to use the masks!
