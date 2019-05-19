@@ -40,4 +40,4 @@ Once a folder with valid frames is selected, the *Draw Beamstop* tab becomes ava
  - Press *Save Mask* to save the current mask
  - *Reset Mask* resets both patches to their initial states
 
-The masks are saved to *Output Directory* (once Save Mask is pressed) and follow a name convention internally used by SAINT so no further steps are needed in order to use the masks!
+The masks are saved to *Output Directory* and follow the nameing convention used by SAINT so no further steps are needed in order to use the masks.
