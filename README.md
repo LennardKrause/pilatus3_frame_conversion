@@ -30,10 +30,10 @@ Use the filebrowser to navigate to the frame folder, it may take a while to read
 
 ### Draw Beamstop
 Once a folder with valid frames is selected, the *Draw Beamstop* tab becomes available. The filebrowser is disabled during conversion, however, the drawing tab is not. It is recommended to start the frame conversion prior to drawing masks as it assures that the mask files are stored in the same folder as the converted frames. The image is shown in native resolution, use the scroll bars to navigate to the beamstop shadow. Drag and adjust the patches (rectangle, ellipse) to where they are needed. The intrinsic dead areas of the Pilatus3 detector and bad pixels are masked automatically. If a patch is not needed, simply adjust its size and put it onto a dead area. General usage:
- - *Left* click/drag on either patch to move it
- - *Right* click/drag (hold Control) to adjust shape and size
- - *Middle* click/drag (hold Shift) Rectangle adjusts angle
- - *Double click* on Rectangle to flip up/down
+ - Left click + drag on either patch to move it
+ - Right click + drag (or hold *Control*) to adjust shape and size
+ - Middle click + drag (or hold *Shift*) Rectangle adjusts angle
+ - Double click on Rectangle to flip up/down
  - Use the *Intensity* slider to adjust the contrast
  - Use the *arrow keys* to switch between runs
  - Press *Save Mask* to save the current mask
