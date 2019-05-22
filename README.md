@@ -20,6 +20,10 @@ It is currently designed to convert data collected at the following synchrotron 
   - [matplotlib (3.0.3)](https://matplotlib.org/)
   - [PyQt5 (5.12.2)](https://www.riverbankcomputing.com/software/pyqt/intro/)
 
+## Important
+   - This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY.
+   - Bruker is not associated with this software and will not support this.
+   
 ## Program Layout
 Filebrowser / Image Conversion - Tab | Draw Beamstop - Tab
 ------------------------------------ | -------------------
