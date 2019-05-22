@@ -526,15 +526,14 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     goni_phi = float(re.search('Phi\s+(-*\d+\.\d+)\s+deg.', header).groups()[0])
     goni_alp = float(re.search('Alpha\s+(-*\d+\.\d+)\s+deg.', header).groups()[0])
     scan_inc = float(re.search('Phi_increment\s+(-*\d+\.\d+)\s+deg.', header).groups()[0])
-    pil_x    = float(re.search('Beam_xy\s+\((\d+\.\d+),\s+(\d+\.\d+)\)\s+pixels', header).groups()[0])
-    pil_y    = float(re.search('Beam_xy\s+\((\d+\.\d+),\s+(\d+\.\d+)\)\s+pixels', header).groups()[1])
+    p_x, p_y = float(re.search('Beam_xy\s+\((\d+\.\d+),\s+(\d+\.\d+)\)\s+pixels', header).groups())
     
     # convert Kappa to Euler geometry
     goni_omg, goni_chi, goni_phi = kappa_to_euler(goni_omg, goni_kap, goni_alp, goni_phi)
     
     # adjust the beam center to the rotation
-    beam_x = pil_y + offset_rows
-    beam_y = cols - pil_x + offset_cols
+    beam_x = p_y + offset_rows
+    beam_y = cols - p_x + offset_cols
     
     # APS to Bruker conversion:
     scan_inc = -scan_inc
