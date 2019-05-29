@@ -38,6 +38,63 @@ def read_photon2_raw(fname, dim1, dim2, bytecode):
     data = np.fromstring(rawData, bytecode).reshape((dim1, dim2))
     return data
 
+def read_sfrm(fname):
+    '''
+     Read Bruker .sfrm frame
+     - header is returned as continuous stream
+     - information read from header 
+       - detector dimensions (NROWS, NCOLS)
+       - bytes per pixel of image (NPIXELB)
+       - number of pixels in 16 and 32 bit overflowtables (NOVERFL)
+     - data is returned as uint32 2D-Array
+    '''
+    #def chunkstring(string, length):
+    #    '''
+    #     return header as list of tuples
+    #      - splits once at ':'
+    #      - keys and values are stripped strings
+    #      - values with more than 1 entry are un-splitted
+    #    '''
+    #    return list(tuple(map(lambda i: i.strip(), string[0+i:length+i].split(':', 1))) for i in range(0, len(string), length)) 
+    #header_list = chunkstring(header, 80)
+    with open(fname, 'rb') as f:
+        # read the first 512 bytes
+        # find keyword 'HDRBLKS' 
+        header_0 = f.read(512).decode()
+        # header consists of HDRBLKS x 512 byte blocks
+        header_blocks = int(re.findall('\s*HDRBLKS\s*:\s*(\d+)', header_0)[0])
+        # read the remaining header
+        header = header_0 + f.read(header_blocks * 512 - 512).decode()
+        # extract frame info:
+        # - rows, cols (NROWS, NCOLS)
+        # - bytes-per-pixel of image (NPIXELB)
+        # - length of 16 and 32 bit overflow tables (NOVERFL)
+        nrows = int(re.findall('\s*NROWS\s*:\s*(\d+)', header)[0])
+        ncols = int(re.findall('\s*NCOLS\s*:\s*(\d+)', header)[0])
+        npixb = int(re.findall('\s*NPIXELB\s*:\s*(\d+)', header)[0])
+        nov16, nov32 = list(map(int, re.findall('\s*NOVERFL\s*:\s*-*\d+\s+(\d+)\s+(\d+)', header)[0]))
+        # calculate the size of the image
+        im_size = nrows * ncols * npixb
+        # bytes-per-pixel to datatype
+        bpp2dt = [None, np.uint8, np.uint16, None, np.uint32]
+        # reshape data, set datatype to np.uint32
+        data = np.fromstring(f.read(im_size), bpp2dt[npixb]).reshape((nrows, ncols)).astype(np.uint32)
+        # read the 16 bit overflow table
+        # table is padded to a multiple of 16 bytes
+        read_16 = int(np.ceil(nov16 * 2 / 16)) * 16
+        # read the table, trim the trailing zeros
+        table_16 = np.trim_zeros(np.fromstring(f.read(read_16), np.uint16))
+        # read the 32 bit overflow table
+        # table is padded to a multiple of 16 bytes
+        read_32 = int(np.ceil(nov32 * 4 / 16)) * 16
+        # read the table, trim the trailing zeros
+        table_32 = np.trim_zeros(np.fromstring(f.read(read_32), np.uint32))
+        # assign values from 16 bit overflow table
+        data[data == 255] = table_16
+        # assign values from 32 bit overflow table
+        data[data == 65535] = table_32
+        return header, data
+
 def decByteOffset_np(stream, dtype="int64"):
     '''
     The following code is taken from the FabIO package:
@@ -526,7 +583,8 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     goni_phi = float(re.search('Phi\s+(-*\d+\.\d+)\s+deg.', header).groups()[0])
     goni_alp = float(re.search('Alpha\s+(-*\d+\.\d+)\s+deg.', header).groups()[0])
     scan_inc = float(re.search('Phi_increment\s+(-*\d+\.\d+)\s+deg.', header).groups()[0])
-    p_x, p_y = float(re.search('Beam_xy\s+\((\d+\.\d+),\s+(\d+\.\d+)\)\s+pixels', header).groups())
+    temp     = re.search('Beam_xy\s+\((\d+\.\d+),\s+(\d+\.\d+)\)\s+pixels', header).groups()
+    p_x, p_y = float(temp[0]), float(temp[1])
     
     # convert Kappa to Euler geometry
     goni_omg, goni_chi, goni_phi = kappa_to_euler(goni_omg, goni_kap, goni_alp, goni_phi)
