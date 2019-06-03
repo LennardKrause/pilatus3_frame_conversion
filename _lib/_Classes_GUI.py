@@ -302,7 +302,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         aFrame = os.path.abspath(self.rList[idx])
         self.check_format(aFrame)
         self.mask_check_stored(aFrame)
-        self.FVObj.frame_update(aFrame, *self.fInfo, self.fFunc, self.fRota)
+        self.FVObj.frame_update(aFrame, self.fFunc, *self.fInfo, rotate=self.fRota)
     
     def mask_change_image_rel(self, inc):
         logging.info(self.__class__.__name__)
@@ -404,7 +404,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         '''
         if idx == 1:
             self.mask_check_stored(self.fPath)
-            self.FVObj.frame_update(self.fPath, *self.fInfo, self.fFunc, self.fRota)
+            self.FVObj.frame_update(self.fPath, self.fFunc, *self.fInfo, rotate=self.fRota)
         else:
             return
     
