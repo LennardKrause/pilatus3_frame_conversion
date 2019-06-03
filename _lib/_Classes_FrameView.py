@@ -50,7 +50,7 @@ class FrameView(FigureCanvas):
         self.cmap = 'hot'
         self.showFrame = None
     
-    def frame_update(self, fPath, rows, cols, offset, rFunct, rotate=True):
+    def frame_update(self, fPath, rFunct, rows, cols, offset, rotate=True):
         logging.info(self.__class__.__name__)
         # initial frame dimensions
         # if the frame dimensions change we need to clear/redraw the figureCanvas
