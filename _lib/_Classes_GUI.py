@@ -374,7 +374,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         msgBox.setText(_text)
         msgBox.setInformativeText(_info)
         msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msgBox.exec()
+        msgBox.exec_()
     
     def check_path_link(self):
         logging.info(self.__class__.__name__)
