@@ -524,6 +524,26 @@ def fix_bad_pixel(data, flag, bad_int=-2, sat_val=2**20):
         data[data == bad_int] = 0
     return data
 
+def get_run_info(basename):
+    # try to get the run and frame number from the filename
+    # any_name_runNum_frmNum is assumed.
+    # maybe except for index error as well!
+    try:
+        _split = basename.split('_')
+        frmTmp = _split.pop()
+        frmLen = len(frmTmp)
+        frmNum = int(frmTmp)
+        runNum = int(_split.pop())
+        stem = '_'.join(_split)
+        return stem, runNum, frmNum, frmLen
+    except ValueError:
+        pass
+    # SP-8 naming convention
+    frmNum = int(basename[-3:])
+    runNum = int(basename[-5:-3])
+    stem = basename[:-6]
+    return stem, runNum, frmNum, 3
+    
 def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096, overwrite=True):
     '''
     
@@ -535,18 +555,10 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     # split path, name and extension
     path_to, frame_name = os.path.split(fname)
     basename, ext = os.path.splitext(frame_name)
-    # try to get the run and frame number from the filename
-    # any_name_runNum_frmNum.sfrm is assumed.
-    try:
-        _split = basename.split('_')
-        frmNum = int(_split.pop())
-        runNum = int(_split.pop())
-        stem = '_'.join(_split)
-    except ValueError:
-        return False
+    frame_stem, frame_run, frame_num, frame_len = get_run_info(basename)
     
-    # output file
-    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(stem, runNum, frmNum))
+    # output file format: some_name_rr_ffff.sfrm
+    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>0{w}}.sfrm'.format(frame_stem, frame_run, frame_num, w=frame_len))
 
     # check if file exists and overwrite flag
     if os.path.exists(outName) and overwrite == False:
@@ -636,7 +648,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     header['DISTANC']    = [goni_dxt / 10.0]                         # Sample-detector distance, cm
     header['RANGE']      = [abs(scan_inc)]                           # Magnitude of scan range in decimal degrees
     header['INCREME']    = [scan_inc]                                # Signed scan angle increment between frames
-    header['NUMBER']     = [frmNum]                                  # Number of this frame in series (zero-based)
+    header['NUMBER']     = [frame_num]                               # Number of this frame in series (zero-based)
     header['NFRAMES']    = ['?']                                     # Number of frames in the series
     header['AXIS'][:]    = [3]                                       # Scan axis (1=2-theta, 2=omega, 3=phi, 4=chi)
     header['LOWTEMP'][:] = [1, int((-273.15 + 20.0) * 100.0), -6000] # Low temp flag; experiment temperature*100; detector temp*100
@@ -672,12 +684,10 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     # split path, name and extension
     path_to, frame_name = os.path.split(fname)
     basename, ext = os.path.splitext(frame_name)
-    
-    # get run (r) and frame (f) number: some_name_rrfff
-    frame_stem, frame_run, frame_num = basename[:-5], int(basename[-5:-3]), int(basename[-3:])
+    frame_stem, frame_run, frame_num, frame_len = get_run_info(basename)
     
     # output file format: some_name_rr_ffff.sfrm
-    outName = os.path.join(path_to, path_sfrm, '{}{:>02}_{:>04}.sfrm'.format(frame_stem, frame_run, frame_num))
+    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>0{w}}.sfrm'.format(frame_stem, frame_run, frame_num, w=frame_len))
 
     # check if file exists and overwrite flag
     if os.path.exists(outName) and overwrite == False:
@@ -823,20 +833,10 @@ def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, offset=0, o
     # split path, name and extension
     path_to, frame_name = os.path.split(fname)
     basename, ext = os.path.splitext(frame_name)
+    frame_stem, frame_run, frame_num, frame_len = get_run_info(basename)
     
-    # try to get the run and frame number from the filename
-    # any_name_runNum_frmNum.sfrm is assumed.
-    try:
-        _split = basename.split('_')
-        frmNum = int(_split.pop())
-        runNum = int(_split.pop())
-        stem = '_'.join(_split)
-    except ValueError:
-        frmNum = 1
-        runNum = 1
-    
-    # output file
-    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(stem, runNum, frmNum))
+    # output file format: some_name_rr_ffff.sfrm
+    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>0{w}}.sfrm'.format(frame_stem, frame_run, frame_num, w=frame_len))
 
     # check if file exists and overwrite flag
     if os.path.exists(outName) and overwrite == False:
@@ -934,7 +934,7 @@ def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, offset=0, o
     header['DISTANC']    = [float(gon_dxt) / 10.0]                   # Sample-detector distance, cm
     header['RANGE']      = [abs(sca_inc)]                            # Magnitude of scan range in decimal degrees
     header['INCREME']    = [sca_inc]                                 # Signed scan angle increment between frames
-    header['NUMBER']     = [frmNum]                                  # Number of this frame in series (zero-based)
+    header['NUMBER']     = [frame_num]                               # Number of this frame in series (zero-based)
     header['NFRAMES']    = ['?']                                     # Number of frames in the series
     header['AXIS'][:]    = [sca_axs]                                 # Scan axis (1=2-theta, 2=omega, 3=phi, 4=chi)
     header['LOWTEMP'][:] = [1, 0, 0]                                 # Low temp flag; experiment temperature*100; detector temp*100
