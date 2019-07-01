@@ -188,28 +188,19 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             if not ext == '.cbf':
                 return False
             # open file and check: _diffrn.id DLS_I19-1
-            with open(aFrame) as oFrame:
-                id = re.search('_diffrn.id\s+(?P<id>.+)', oFrame.read(2048)).group('id')
+            with open(aFrame, 'rb') as oFrame:
+                id = re.search(b'_diffrn.id\s+(?P<id>.+)', oFrame.read(2048)).group('id').decode().strip()
             if not id == 'DLS_I19-1':
-                return
-            _split = bname.split('_')
-            fnum = _split.pop()
-            rnum = _split.pop()
-            fstm = '_'.join(_split)
-            ###############################
-            ##    if this doesn't fail   ##
-            ##   we assume DLS format!   ##
-            ###############################
-            _          = int(fnum)
-            self.fRnum = int(rnum)
-            ###############################
-            self.fStem = fstm              # Frame name up to the run number
-            self.fPath = aFrame            # Full path to frame incl. frame name
-            self.fStar = '00001.'          # Number indicating start of a run
-            self.fInfo = (1679, 1475, 0)   # Frame info (rows, cols, offset)
-            self.fSite = 'DLS'             # Facility identifier
-            self.fFunc = read_pilatus_cbf  # Frame read function (from _Utility)
-            self.fRota = False             # rotate the frame upon conversion?
+                return False
+            fstm, rnum, fnum, flen = get_run_info(bname)
+            self.fRnum = rnum                         # Run number
+            self.fStem = fstm                         # Frame name up to the run number
+            self.fPath = aFrame                       # Full path to frame incl. frame name
+            self.fStar = '{:>0{w}}.'.format(1, w=flen)# Number indicating start of a run
+            self.fInfo = (1679, 1475, 0)              # Frame info (rows, cols, offset)
+            self.fSite = 'DLS'                        # Facility identifier
+            self.fFunc = read_pilatus_cbf             # Frame read function (from _Utility)
+            self.fRota = False                        # rotate the frame upon conversion?
             return True
         except (ValueError, IndexError):
             return False
@@ -225,24 +216,20 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             bname, ext = os.path.splitext(fname)
             if not ext == '.tif':
                 return False
-            _split = bname.split('_')
-            fnum = _split.pop()
-            rnum = _split.pop()
-            fstm = '_'.join(_split)
-            ###############################
-            ##    if this doesn't fail   ##
-            ##   we assume APS format!   ##
-            ###############################
-            _          = int(fnum)
-            self.fRnum = int(rnum)
-            ###############################
-            self.fStem = fstm              # Frame name up to the run number
-            self.fPath = aFrame            # Full path to frame incl. frame name
-            self.fStar = '0001.'           # Number indicating start of a run
-            self.fInfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
-            self.fSite = 'APS'             # Facility identifier
-            self.fFunc = read_pilatus_tif  # Frame read function (from _Utility)
-            self.fRota = True              # rotate the frame upon conversion?
+            # open file and check S/N: 10-0147
+            with open(aFrame, 'rb') as oFrame:
+                SN = re.search(b'S/N\s+(?P<SN>\d+\-\d+)', oFrame.read(128)).group('SN').decode()
+            if not SN == '10-0147':
+                return False
+            fstm, rnum, fnum, flen = get_run_info(bname)
+            self.fRnum = rnum                         # Run number
+            self.fStem = fstm                         # Frame name up to the run number
+            self.fPath = aFrame                       # Full path to frame incl. frame name
+            self.fStar = '{:>0{w}}.'.format(1, w=flen)# Number indicating start of a run
+            self.fInfo = (1043, 981, 4096)            # Frame info (rows, cols, offset)
+            self.fSite = 'APS'                        # Facility identifier
+            self.fFunc = read_pilatus_tif             # Frame read function (from _Utility)
+            self.fRota = True                         # rotate the frame upon conversion?
             return True
         except (ValueError, IndexError):
             return False
@@ -259,23 +246,23 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             bname, ext = os.path.splitext(fname)
             if not ext == '.tif':
                 return False
-            fstm = bname[:-6]
-            rnum = bname[-5:-3]
-            fnum = bname[-3:]
-            ###############################
-            ##    if this doesn't fail   ##
-            ##   we assume SP8 format!   ##
-            ###############################
-            _          = int(fnum)
-            self.fRnum = int(rnum)
-            ###############################
-            self.fStem = fstm              # Frame name up to the run number
-            self.fPath = aFrame            # Full path to frame incl. frame name
-            self.fStar = '001.'            # Number indicating start of a run
-            self.fInfo = (1043, 981, 4096) # Frame info (rows, cols, offset)
-            self.fSite = 'SP8'             # Facility identifier
-            self.fFunc = read_pilatus_tif  # Frame read function (from _Utility)
-            self.fRota = True              # rotate the frame upon conversion?
+            # open file and check S/N: 10-0163
+            with open(aFrame, 'rb') as oFrame:
+                SN = re.search(b'S/N\s+(?P<SN>\d+\-\d+)', oFrame.read(128)).group('SN').decode()
+            if not SN == '10-0163':
+                return False
+            fstm, rnum, fnum, flen = get_run_info(bname)
+            ########################################
+            ## USE FNUM TO DEFINE START OF RUN!!! ##
+            ########################################
+            self.fRnum = rnum                         # Run number
+            self.fStem = fstm                         # Frame name up to the run number
+            self.fPath = aFrame                       # Full path to frame incl. frame name
+            self.fStar = '{:>0{w}}.'.format(1, w=flen)# Number indicating start of a run
+            self.fInfo = (1043, 981, 4096)            # Frame info (rows, cols, offset)
+            self.fSite = 'SP8'                        # Facility identifier
+            self.fFunc = read_pilatus_tif             # Frame read function (from _Utility)
+            self.fRota = True                         # rotate the frame upon conversion?
             return True
         except ValueError:
             return False
