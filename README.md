@@ -12,8 +12,8 @@ The data can then be integrated using Brukers SAINT+ Integration Engine V8.35A o
   - any frame size is now allowed
 
 ## Important
-   - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY.
-   - Bruker is not associated with this software and will not support this.
+   - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY
+   - Bruker is not associated with this software and will not support this
 
 ## Requirements
 
