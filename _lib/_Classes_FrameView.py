@@ -15,8 +15,14 @@ from _Utility import pilatus_pad,
                      write_bruker_frame
 
 class FrameView(FigureCanvas):
-
+    
+    # signal mask_written
+    # - notify GUI that mask was writen
+    # - str: image path
     mask_written = QtCore.pyqtSignal(str)
+    # signal frame_loaded
+    # - if the image dimensions change the GUI needs to adjust the widget size
+    # - int, int: image dimensions
     frame_loaded = QtCore.pyqtSignal(int, int)
     
     def __init__(self, parent=None):
