@@ -7,11 +7,15 @@ It is currently designed to convert data collected at the following synchrotron 
   - [SPring-8](http://www.spring8.or.jp/en/) / BL02B1
   - [Diamond Light Source](https://www.diamond.ac.uk/Home.html) / I19-1
 
-## Requirements
-
-#### Bruker SAINT+ Integration Engine V8.35A or later
+The data can then be integrated using Brukers SAINT+ Integration Engine V8.35A or later
   - requirement that frames consist of multiples of 512 pixels has been lifted
   - any frame size is now allowed
+
+## Important
+   - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY
+   - Bruker is not associated with this software and will not support this
+
+## Requirements
 
 #### [Python](https://www.python.org/) 3.5 or later
 
@@ -19,10 +23,6 @@ It is currently designed to convert data collected at the following synchrotron 
   - [numpy (1.16.3)](https://www.numpy.org/)
   - [matplotlib (3.0.3)](https://matplotlib.org/)
   - [PyQt5 (5.12.2)](https://www.riverbankcomputing.com/software/pyqt/intro/)
-
-## Important
-   - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY.
-   - Bruker is not associated with this software and will not support this.
    
 ## Program Layout
 Filebrowser / Image Conversion - Tab | Draw Beamstop - Tab
