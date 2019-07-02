@@ -17,7 +17,7 @@ from _Utility import pilatus_pad,
 class FrameView(FigureCanvas):
     
     # signal mask_written
-    # - notify GUI that mask was writen
+    # - signal to GUI (update stored mask indicator)
     # - str: image path
     mask_written = QtCore.pyqtSignal(str)
     # signal frame_loaded
