@@ -1,4 +1,4 @@
-_REVISION = 'v2019-05-07'
+_REVISION = 'v2019-07-02'
 
 import sys, os, logging
 from PyQt5 import QtWidgets
