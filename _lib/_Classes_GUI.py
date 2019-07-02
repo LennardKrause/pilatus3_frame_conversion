@@ -3,7 +3,12 @@ import numpy as np
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
 from _Classes_FrameView import FrameView
-from _Utility import *
+from _Utility import read_pilatus_cbf,
+                     read_pilatus_tif,
+                     get_run_info,
+                     convert_frame_APS_Bruker,
+                     convert_frame_SP8_Bruker,
+                     convert_frame_DLS_Bruker
 
 class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirname(__file__), '_Main_GUI.ui'))[0]):
     def __init__(self, parent=None):
