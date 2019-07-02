@@ -10,7 +10,9 @@ import os, sys, logging
 import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
 from _Classes_DraggableObject import DraggableObject
-from _Utility import *
+from _Utility import pilatus_pad,
+                     bruker_header,
+                     write_bruker_frame
 
 class FrameView(FigureCanvas):
 
