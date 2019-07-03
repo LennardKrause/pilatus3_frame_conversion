@@ -558,7 +558,7 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     frame_stem, frame_run, frame_num, _ = get_run_info(basename)
     
     # output file format: some_name_rr_ffff.sfrm
-    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(frame_stem, frame_run, frame_num)
+    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(frame_stem, frame_run, frame_num))
 
     # check if file exists and overwrite flag
     if os.path.exists(outName) and overwrite == False:
