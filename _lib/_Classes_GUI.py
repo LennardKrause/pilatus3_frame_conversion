@@ -1,4 +1,4 @@
-import os, sys, logging, glob, multiprocessing, re
+import os, sys, logging, multiprocessing, re
 import numpy as np
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
@@ -428,6 +428,7 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         fDir.setPath(curPath)
         fDir.setNameFilters(self.exts)
         fDir.setFilter(QtCore.QDir.Files | QtCore.QDir.NoDotAndDotDot)
+        fDir.setSorting(QtCore.QDir.Name)
         nFrames = fDir.count()
         
         if nFrames > 0:
