@@ -555,10 +555,10 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     # split path, name and extension
     path_to, frame_name = os.path.split(fname)
     basename, ext = os.path.splitext(frame_name)
-    frame_stem, frame_run, frame_num, frame_len = get_run_info(basename)
+    frame_stem, frame_run, frame_num, _ = get_run_info(basename)
     
     # output file format: some_name_rr_ffff.sfrm
-    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>0{w}}.sfrm'.format(frame_stem, frame_run, frame_num, w=frame_len))
+    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(frame_stem, frame_run, frame_num)
 
     # check if file exists and overwrite flag
     if os.path.exists(outName) and overwrite == False:
@@ -684,10 +684,10 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     # split path, name and extension
     path_to, frame_name = os.path.split(fname)
     basename, ext = os.path.splitext(frame_name)
-    frame_stem, frame_run, frame_num, frame_len = get_run_info(basename)
+    frame_stem, frame_run, frame_num, _ = get_run_info(basename)
     
     # output file format: some_name_rr_ffff.sfrm
-    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>0{w}}.sfrm'.format(frame_stem, frame_run, frame_num, w=frame_len))
+    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(frame_stem, frame_run, frame_num))
 
     # check if file exists and overwrite flag
     if os.path.exists(outName) and overwrite == False:
@@ -833,10 +833,10 @@ def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, offset=0, o
     # split path, name and extension
     path_to, frame_name = os.path.split(fname)
     basename, ext = os.path.splitext(frame_name)
-    frame_stem, frame_run, frame_num, frame_len = get_run_info(basename)
+    frame_stem, frame_run, frame_num, _ = get_run_info(basename)
     
     # output file format: some_name_rr_ffff.sfrm
-    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>0{w}}.sfrm'.format(frame_stem, frame_run, frame_num, w=frame_len))
+    outName = os.path.join(path_to, path_sfrm, '{}_{:>02}_{:>04}.sfrm'.format(frame_stem, frame_run, frame_num))
 
     # check if file exists and overwrite flag
     if os.path.exists(outName) and overwrite == False:
