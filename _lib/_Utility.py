@@ -798,7 +798,7 @@ def convert_frame_SP8_Bruker(fname, path_sfrm, tth_corr=0.0, rows=1043, cols=981
     header['RANGE']      = [abs(scan_inc)]                                      # Magnitude of scan range in decimal degrees
     header['INCREME']    = [scan_inc]                                           # Signed scan angle increment between frames
     header['NUMBER']     = [frame_num]                                          # Number of this frame in series (zero-based)
-    header['NFRAMES']    = [scan_num]                                           # Number of frames in the series
+    header['NFRAMES']    = [int(scan_num)]                                      # Number of frames in the series
     header['AXIS'][:]    = [RAXIS2BRUKER[scan_rax]]                             # Scan axis (1=2-theta, 2=omega, 3=phi, 4=chi)
     header['LOWTEMP'][:] = [1, int((-273.15 + 20.0) * 100.0), -6000]            # Low temp flag; experiment temperature*100; detector temp*100
     header['NEXP'][2]    = baseline_offset
