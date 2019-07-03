@@ -10,7 +10,9 @@ It is currently designed to convert data collected at the following synchrotron 
 The data can then be integrated using Brukers SAINT+ Integration Engine V8.35A or later
   - requirement that frames consist of multiples of 512 pixels has been lifted
   - any frame size is now allowed
-  - issue: frame numbers must not exceed 4 digits (mask files will not be read!)
+
+Known Issues
+  - frame numbers must not exceed 4 digits (mask files will not be read!)
 
 ## Important
    - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY
