@@ -12,7 +12,7 @@ The data can then be integrated using Brukers SAINT+ Integration Engine V8.35A o
   - any frame size is now allowed
 
 Known Issues
-  - frame numbers must not exceed 4 digits or the mask files will not be read!
+  - frame numbers must not exceed 4 digits or the mask files will not be read by SAINT
 
 ## Important
    - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY
