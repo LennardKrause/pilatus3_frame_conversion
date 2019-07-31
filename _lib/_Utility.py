@@ -620,8 +620,11 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     # PILATUS3-1M pixel size is 0.172 mm 
     pix_per_512 = round((10.0 / 0.172) * (512.0 / ((rows + cols) / 2.0)), 6)
     
-    if beamflux:
-        scan_flx = beamflux[frame_run][frame_num -1]
+    if beamflux is not None:
+        try:
+            scan_flx = beamflux[frame_run][frame_num -1]
+        except IndexError:
+            print('WARNING: Beamflux not found for {}!'.format(basename))
     
     # default bruker header
     header = bruker_header()
