@@ -1,4 +1,4 @@
-import os, sys, logging, multiprocessing, re
+import os, sys, logging, multiprocessing, re, glob
 import numpy as np
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
@@ -537,8 +537,12 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
             if self.fSite == 'APS':
                 rows, cols, offset = self.fInfo
                 conversion = convert_frame_APS_Bruker
+                beamflux = {}
+                for f in glob.glob(os.path.join(path_input,'*_flux.txt')):
+                    with open(f) as ofile:
+                        beamflux[int(f.split('_')[-2])] = [int(float(x)) for x in ofile.read().split()[1::2]]
                 args = [path_output]
-                kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
+                kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag, 'beamflux':beamflux}
             elif self.fSite == 'SP8':
                 rows, cols, offset = self.fInfo
                 # check data collection timestamp
