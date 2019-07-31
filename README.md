@@ -14,6 +14,9 @@ The data can then be integrated using Brukers SAINT+ Integration Engine V8.35A o
 #### Known Issues
   - frame numbers must not exceed 4 digits or the mask files will not be read by SAINT
 
+#### Recent Changes
+   - 20190731: APS beam flux (stored in: *ExperimentName_flux.txt*) is now written into the frame header
+
 ## Important
    - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY
    - Bruker is not associated with this software and will not support this
@@ -43,8 +46,8 @@ Once a folder with valid frames is selected, the *Draw Beamstop* tab becomes ava
  - Middle click + drag (or hold *Shift*) to change the angle
  - Double click on the rectangle to flip up/down
  - Use the *Intensity* slider to adjust the contrast
- - Navigate between runs using the *arrow keys*
+ - Navigate between runs using the *arrow buttons*
  - Press *Save Mask* to save the current mask
  - *Reset Mask* resets both patches to their initial states
 
-The masks are saved to *Output Directory* and follow the nameing convention used by SAINT so no further steps are needed in order to use the masks.
+The masks are saved to *Output Directory* and follow the naming convention used by SAINT so no further steps are needed in order to use the masks.
