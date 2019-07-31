@@ -544,7 +544,7 @@ def get_run_info(basename):
     stem = basename[:-6]
     return stem, runNum, frmNum, 3
     
-def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096, overwrite=True):
+def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096, overwrite=True, beamflux=None):
     '''
     
     '''
@@ -619,6 +619,9 @@ def convert_frame_APS_Bruker(fname, path_sfrm, rows=1043, cols=981, offset=4096,
     # this is normalized to a 512x512 detector format
     # PILATUS3-1M pixel size is 0.172 mm 
     pix_per_512 = round((10.0 / 0.172) * (512.0 / ((rows + cols) / 2.0)), 6)
+    
+    if beamflux:
+        scan_flx = beamflux[frame_run][frame_num -1]
     
     # default bruker header
     header = bruker_header()
