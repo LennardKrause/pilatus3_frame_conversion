@@ -14,12 +14,12 @@ The data can then be integrated using Brukers SAINT+ Integration Engine V8.35A o
 #### Known Issues
   - frame numbers must not exceed 4 digits or the mask files will not be read by SAINT
 
+#### Changelog
+   - 20190731: APS beam flux (stored in: *ExperimentName_flux.txt*) is now written into the frame header
+
 ## Important
    - This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY
    - Bruker is not associated with this software and will not support this
-
-## Changelog
-   - 20190731: APS beam flux (stored in: *ExperimentName_flux.txt*) is now written into the frame header
 
 ## Requirements
 
