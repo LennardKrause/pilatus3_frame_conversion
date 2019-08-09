@@ -158,6 +158,9 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         self.fList = []
         self.suffix = '_sfrm'
         
+        # some hardcoded limits that might make sense
+        self.hs_mask_int.setMaximum(1000)
+        
         #########################################
         ##  Add new format identifiers here!   ##
         #########################################
@@ -303,7 +306,6 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
     
     def mask_change_frame_max_int(self):
         #logging.info(self.__class__.__name__)
-        self.FVObj.intMax = self.hs_mask_int.value()
         self.FVObj.showFrame.set_clim(vmin=0, vmax=self.hs_mask_int.value())
         self.FVObj.cmap_max = self.hs_mask_int.value()
         self.FVObj.draw()
