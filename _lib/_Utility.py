@@ -150,12 +150,12 @@ def read_pilatus_cbf(fname, *args):
     import re
     with open(fname, 'rb') as f:
         stream = f.read()
-    start = stream.find(b'\x0c\x1a\x04\xd5')
+    start = stream.find(b'\x0c\x1a\x04\xd5') +4
     head = str(stream[:start])
     size = int(re.search('X-Binary-Size:\s+(\d+)', head).group(1))
     dim1 = int(re.search('X-Binary-Size-Fastest-Dimension:\s+(\d+)', head).group(1))
     dim2 = int(re.search('X-Binary-Size-Second-Dimension:\s+(\d+)', head).group(1))
-    data = decByteOffset_np(stream[start:start+size]).reshape((dim2, dim1)) + 1
+    data = decByteOffset_np(stream[start:start+size]).reshape((dim2, dim1))
     return head, data
 
 def read_pilatus_tif(fname, rows, cols, offset, bytecode):
@@ -889,23 +889,23 @@ def convert_frame_DLS_Bruker(fname, path_sfrm, rows=1679, cols=1475, offset=0, o
     beam_x = pil_x + offset_cols
     
     # DLS to Bruker conversion:
-    sta_tth = round(-sta_tth, 1)
-    sta_omg = round(180.0 - sta_omg, 1)
-    inc_omg = round(-inc_omg, 1)
-    sta_chi = round(-sta_chi, 1)
-    inc_chi = round(-inc_chi, 1)
+    sta_tth = round(-sta_tth, 4)
+    sta_omg = round(180.0 - sta_omg, 4)
+    inc_omg = round(-inc_omg, 4)
+    sta_chi = round(-sta_chi, 4)
+    inc_chi = round(-inc_chi, 4)
     
     # ending positions
-    end_phi = round(sta_phi + inc_phi, 1)
-    end_chi = round(sta_chi + inc_chi, 1)
-    end_omg = round(sta_omg + inc_omg, 1)
-    end_tth = round(sta_tth, 1)
+    end_phi = round(sta_phi + inc_phi, 4)
+    end_chi = round(sta_chi + inc_chi, 4)
+    end_omg = round(sta_omg + inc_omg, 4)
+    end_tth = round(sta_tth, 4)
     
     # Scan axis (1=2-theta, 2=omega, 3=phi, 4=chi)
     ang_nam = ['Omega',  'Phi' ,  'Chi' ]
     ang_inc = [inc_omg, inc_phi, inc_chi]
     ang_sta = [sta_omg, sta_phi, sta_chi]
-    sca_nam, sca_axs, sca_sta, sca_inc = [(ang_nam[i], int(i+2), ang_sta[i], round(v,1)) for i,v in enumerate(ang_inc) if v != 0.0][0]
+    sca_nam, sca_axs, sca_sta, sca_inc = [(ang_nam[i], int(i+2), ang_sta[i], round(v,4)) for i,v in enumerate(ang_inc) if v != 0.0][0]
     
     # calculate detector pixel per cm
     # this is normalized to a 512x512 detector format
