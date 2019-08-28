@@ -194,7 +194,10 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
                 return False
             # open file and check: _diffrn.id DLS_I19-1
             with open(aFrame, 'rb') as oFrame:
-                id = re.search(b'_diffrn.id\s+(?P<id>.+)', oFrame.read(2048)).group('id').decode().strip()
+                try:
+                    id = re.search(b'_diffrn.id\s+(?P<id>.+)', oFrame.read(2048)).group('id').decode().strip()
+                except AttributeError:
+                    return False
             if not id == 'DLS_I19-1':
                 return False
             fstm, rnum, fnum, flen = get_run_info(bname)
