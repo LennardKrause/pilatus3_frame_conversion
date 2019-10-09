@@ -8,9 +8,9 @@ from _Utility import read_pilatus_cbf, read_pilatus_tif, get_run_info,\
                      convert_frame_DLS_Bruker
 
 class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirname(__file__), '_Main_GUI.ui'))[0]):
-    def __init__(self, parent=None):
+    def __init__(self):
         logging.info(self.__class__.__name__)
-        super(QtWidgets.QMainWindow, self).__init__(parent)
+        super(QtWidgets.QMainWindow, self).__init__()
         self.setupUi(self)
         
         self.status = QtWidgets.QLabel()
@@ -530,78 +530,97 @@ class Main_GUI(QtWidgets.QMainWindow, uic.loadUiType(os.path.join(os.path.dirnam
         #     - 'while len(results) != _todo' constantly checks results to update the progressbar
         #  - pool.close(): close the pool when there are no more files left in 'self.fList'
         #  - pool.join(): wait for remaining processes to finish
-        with multiprocessing.Pool() as pool:
-            #########################################
-            ##  Add new format identifiers here!   ##
-            #########################################
-            # fork here according to specified facility
-            #  - conversion: what _Utility.py function to call
-            #  - parameters: parameters for the conversion function
-            #     - path_output, dimension1, dimension2, overwrite_flag
-            #     - more if needed, e.g. SP8 2-th correction value
-            if self.fSite == 'APS':
-                rows, cols, offset = self.fInfo
-                conversion = convert_frame_APS_Bruker
-                beamflux = {}
-                for f in glob.glob(os.path.join(path_input,'*_flux.txt')):
-                    with open(f) as ofile:
-                        beamflux[int(f.split('_')[-2])] = [int(float(x)) for x in ofile.read().split()[1::2]]
-                args = [path_output]
-                kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag, 'beamflux':beamflux}
-            elif self.fSite == 'SP8':
-                rows, cols, offset = self.fInfo
-                # check data collection timestamp
-                with open(self.fPath, 'rb') as ofile:
-                    year = int(re.search(b'(\d{4}):\d{2}:\d{2}\s+\d{2}:\d{2}:\d{2}', ofile.read(64)).group(1).decode())
-                SP8_tth_corr = 0.0
-                if year < 2019:
-                    SP8_tth_corr = 0.048
-                conversion = convert_frame_SP8_Bruker
-                args = [path_output]
-                kwargs = {'tth_corr':SP8_tth_corr, 'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
-            elif self.fSite == 'DLS':
-                rows, cols, offset = self.fInfo
-                conversion = convert_frame_DLS_Bruker
-                args = [path_output]
-                kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
-            else:
-                self.popup_window('Information', 'Unknown facility!', '')
-                return
-            
-            # hide button, show bar
-            self.tb_convert.hide()
-            self.pb_convert.show()
-            
-            # feed the pool
-            results = []
-            for fname in self.fList:
-                x = pool.apply_async(conversion, args=[fname] + args, kwds=kwargs, callback=results.append)
-            
-            # update the progress
-            _todo = len(self.fList)
-            while len(results) != _todo:
-                progress = float(len(results)) / float(_todo) * 100.0
-                self.pb_convert.setValue(progress)
-                # use processEvents() to keep track of the loop / update the GUI
-                # or: try to thread it -> in the future.
-                QtWidgets.QApplication.processEvents()
-                if len(results) > 0:
-                    # conversion in progress
-                    self.statusBar.show()
-                    self.status.setText('{}'.format(os.path.basename(self.fList[len(results)-1])))
-            # exit and wait
-            pool.close()
-            pool.join()
-            # conversion finished
-            # show button, hide bar
+        #########################################
+        ##  Add new format identifiers here!   ##
+        #########################################
+        # fork here according to specified facility
+        #  - conversion: what _Utility.py function to call
+        #  - parameters: parameters for the conversion function
+        #     - path_output, dimension1, dimension2, overwrite_flag
+        #     - more if needed, e.g. SP8 2-th correction value
+        if self.fSite == 'APS':
+            rows, cols, offset = self.fInfo
+            conversion = convert_frame_APS_Bruker
+            beamflux = {}
+            for f in glob.glob(os.path.join(path_input,'*_flux.txt')):
+                with open(f) as ofile:
+                    beamflux[int(f.split('_')[-2])] = [int(float(x)) for x in ofile.read().split()[1::2]]
+            args = [path_output]
+            kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag, 'beamflux':beamflux}
+        elif self.fSite == 'SP8':
+            rows, cols, offset = self.fInfo
+            # check data collection timestamp
+            with open(self.fPath, 'rb') as ofile:
+                year = int(re.search(b'(\d{4}):\d{2}:\d{2}\s+\d{2}:\d{2}:\d{2}', ofile.read(64)).group(1).decode())
+            SP8_tth_corr = 0.0
+            if year < 2019:
+                SP8_tth_corr = 0.048
+            conversion = convert_frame_SP8_Bruker
+            args = [path_output]
+            kwargs = {'tth_corr':SP8_tth_corr, 'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
+        elif self.fSite == 'DLS':
+            rows, cols, offset = self.fInfo
+            conversion = convert_frame_DLS_Bruker
+            args = [path_output]
+            kwargs = {'rows':rows, 'cols':cols, 'offset':offset, 'overwrite':overwrite_flag}
+        else:
+            self.popup_window('Information', 'Unknown facility!', '')
+            return
+        
+        self.tb_convert.hide()
+        self.pb_convert.show()
+        self.statusBar.show()
+        
+        # Now uses QRunnable and QThreadPool instead of multiprocessing.pool()
+        self.num_to_convert = len(self.fList)
+        self.converted = []
+        self.pool = QtCore.QThreadPool()
+        for fname in self.fList:
+            worker = self.__class__.Threading(conversion, fname, args, kwargs)
+            worker.signals.finished.connect(self.conversion_process)
+            self.pool.start(worker)
+
+    class Threading(QtCore.QRunnable):
+        class Signals(QtCore.QObject):
+            '''
+             Custom signals can only be defined on objects derived from QObject
+            '''
+            finished = QtCore.pyqtSignal(bool)
+    
+        def __init__(self, fn_conversion, file_name, fn_args, fn_kwargs):
+            '''
+             fn_conversion: Conversion function
+             file_name:     File name to convert
+             fn_args:       Arguments to pass to the function
+             fn_kwargs:     Keywords to pass to the function
+            '''
+            super(self.__class__, self).__init__()
+            self.conversion = fn_conversion
+            self.name = file_name
+            self.args = fn_args
+            self.kwargs = fn_kwargs
+            self.signals = self.__class__.Signals()
+        
+        def run(self):
+            # conversion: returns True/False
+            # signal to conversion_process to track the process
+            self.signals.finished.emit(self.conversion(self.name, *self.args, **self.kwargs))
+    
+    def conversion_process(self, finished):
+        self.converted.append(finished)
+        num_converted = len(self.converted)
+        progress = float(num_converted) / float(self.num_to_convert) * 100.0
+        self.pb_convert.setValue(progress)
+        self.status.setText('{}'.format(os.path.basename(self.fList[num_converted-1])))
+        # conversion finished
+        if num_converted == self.num_to_convert:
+            self.popup_window('Information', 'Successfully converted {} images!'.format(np.count_nonzero(self.converted)), '')
             self.statusBar.hide()
             self.pb_convert.hide()
             self.tb_convert.show()
-            # tell me that you are done
-            self.popup_window('Information', 'Successfully converted {} images!'.format(np.count_nonzero(results)), '')
             # enable main window elements
             self.disable_user_input(False)
-
+        
     def closeEvent(self, event):
         logging.info(self.__class__.__name__)
         '''
