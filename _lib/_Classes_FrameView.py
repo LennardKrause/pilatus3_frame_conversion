@@ -186,7 +186,7 @@ class FrameView(FigureCanvas):
         data_clip[data_clip < 0] = 0
         # set patch area to minus one
         data_clip[data_clip > 0] = -1
-        # everything positive value is data
+        # positive values are data
         # set them to 1 (active)
         self.data[self.data >=  0] = 1
         # the dead areas are flagged negative
