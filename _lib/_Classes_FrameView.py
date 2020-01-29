@@ -186,11 +186,16 @@ class FrameView(FigureCanvas):
         data_clip[data_clip < 0] = 0
         # set patch area to minus one
         data_clip[data_clip > 0] = -1
-        # the dead areas are flagged -1
+        # everything positive value is data
+        # set them to 1 (active)
         self.data[self.data >=  0] = 1
+        # the dead areas are flagged negative
+        # -1:dead pixel or -2: gap area
+        # set everything it all to -1
         self.data[self.data < 0] = -1
         # combine data and patches
         data = self.data + data_clip
+        # now set everything negative to 0 (inactive)
         data[data < 0] = 0
         
         # calculate detector pixel per cm
