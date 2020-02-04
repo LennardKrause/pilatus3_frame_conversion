@@ -1,4 +1,4 @@
-import os, sys, logging, multiprocessing, re, glob
+import os, sys, logging, re, glob
 import numpy as np
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '_lib'))
